@@ -1,7 +1,8 @@
 .DS_store
 secrets/discord_token.py
-secrets/morkcreds.json
 secrets/mycreds.txt
+secrets/other_stuff.md
+secrets/client_secrets.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

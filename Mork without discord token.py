@@ -13,31 +13,16 @@ from discord.ext import commands, tasks
 from datetime import datetime, timezone, timedelta
 from random import randrange
 
-from pydrive.auth import GoogleAuth
-from pydrive.drive import GoogleDrive
-from .secrets.discord_token import DISCORD_ACCESS_TOKEN
+from pydrive2.auth import GoogleAuth
+from pydrive2.drive import GoogleDrive
+
+from login_with_service_account import login_with_service_account
+from secrets.discord_token import DISCORD_ACCESS_TOKEN
 
 
 import hc_constants
 
-gauth = GoogleAuth()
-# Try to load saved client credentials
-gauth.LoadCredentialsFile("secrets/mycreds.txt")
-if gauth.credentials is None:
-    # Authenticate if they're not there
-    # This is what solved the issues:
-    gauth.GetFlow()
-    gauth.flow.params.update({'access_type': 'offline'})
-    gauth.flow.params.update({'approval_prompt': 'force'})
-    gauth.LocalWebserverAuth()
-elif gauth.access_token_expired:
-    # Refresh them if expired
-    gauth.Refresh()
-else:
-    # Initialize the saved creds
-    gauth.Authorize()
-# Save the current credentials to a file
-gauth.SaveCredentialsFile("secrets/mycreds.txt")
+gauth = login_with_service_account()
 drive = GoogleDrive(gauth)
 
 intents = discord.Intents.default()
@@ -50,18 +35,16 @@ intents.guilds = True
 class MyBot(commands.Bot):
     async def setup_hook(self):
         print('This is asynchronous!')
-        initalExtensions = ['cogs.SpecificCards',
+        initialExtensions = ['cogs.SpecificCards',
                     'cogs.Messages',
                     'cogs.Roles'
                     ]
-        for i in initalExtensions:
+        for i in initialExtensions:
             await self.load_extension(i)
 
 bot = MyBot(command_prefix='!', case_insensitive=True, intents=intents)
 bot.remove_command('help')
 
-##for i in initalExtensions:
-##    bot.load_extension(i)
 
 @bot.command()
 async def check_cogs(ctx, cog_name):
@@ -80,13 +63,13 @@ client = discord.Client(intents=intents)
 
 scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
 
-creds = ServiceAccountCredentials.from_json_keyfile_name("secrets/morkcreds.json", scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name("secrets/client_secrets.json", scope)
 
 googleClient = gspread.authorize(creds)
 
 cardSheet = googleClient.open_by_key("1RY8yiuL2cZkQyMMjpGWZleoBs21_zrRbvWxxyMNplOA").get_worksheet(0)
 cardSheetUnapproved = googleClient.open_by_key("1RY8yiuL2cZkQyMMjpGWZleoBs21_zrRbvWxxyMNplOA").get_worksheet(1)
-
+print(cardSheet)
 allCards = {}
 
 bannedUserIds = []
@@ -136,14 +119,14 @@ macroList = {
 "joke" : "If the joke is that the card @arg, then the card @arg",
 "jpeg" : "https://cdn.discordapp.com/attachments/744779598503346278/1081655626322681871/671dfc99-c0ba-ed11-80fd-8e768415d29d.png",
 "video" : {
-"podcast" : "https://www.youtube.com/watch?v=vwG0igxy2Do",
-"cardsmith" : "https://www.youtube.com/watch?v=a8VLXlXRlIY",
-"purple" : "https://www.youtube.com/watch?v=JV4aLhLh6i8",
-"auroch" : "https://www.youtube.com/watch?v=4Al7txEvR4Y",
-"modabuse" : "https://www.youtube.com/watch?v=-e_-rs23SpI",
-"bears" : "https://www.youtube.com/watch?v=pP-q8C-wp2Q",
-"progression" : "https://www.youtube.com/watch?v=zfJUrKfjaNQ",
-},
+  "podcast" : "https://www.youtube.com/watch?v=vwG0igxy2Do",
+  "cardsmith" : "https://www.youtube.com/watch?v=a8VLXlXRlIY",
+  "purple" : "https://www.youtube.com/watch?v=JV4aLhLh6i8",
+  "auroch" : "https://www.youtube.com/watch?v=4Al7txEvR4Y",
+  "modabuse" : "https://www.youtube.com/watch?v=-e_-rs23SpI",
+  "bears" : "https://www.youtube.com/watch?v=pP-q8C-wp2Q",
+  "progression" : "https://www.youtube.com/watch?v=zfJUrKfjaNQ",
+  },
 }
 
 macroNsfwList = {
@@ -1032,13 +1015,13 @@ async def rulings(channel, *cardName):
           message = message + "\n```" + i + "```"
   await channel.send(message)
 
-manaEmojiDict = {
-    "{w}" : ":manaW:",
-    "{u}" : ":manaU:",
-    "{b}" : ":manaB:",
-    "{r}" : ":manaR:",
-    "{g}" : ":manaG:",
-    }
+# manaEmojiDict = {
+#     "{w}" : ":manaW:",
+#     "{u}" : ":manaU:",
+#     "{b}" : ":manaB:",
+#     "{r}" : ":manaR:",
+#     "{g}" : ":manaG:",
+#     }
 
 ##@bot.command()
 ##async def oracle(channel, *cardName):

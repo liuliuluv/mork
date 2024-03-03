@@ -12,4 +12,7 @@
 - "cirionfuckingdies" : "||https://cdn.discordapp.com/attachments/640360977929338918/769952902998523934/ProsLeg.png|| ~~Warning Gore ||not really||~~",
 
 
-- All of specific card
+- All of specific cards
+
+- Figure out how to split up the 
+- stormstorm images are borked

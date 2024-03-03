@@ -4,8 +4,8 @@ I have no idea what is going on, Exalted built this.
 
 # Setup
 1. Install dependencies via `pip install -r requirements.txt`
-
-
+2. Make a new Discord application and invite it to the server
+3. Make a copy of `discord_token.template.py` called `discord_token.py`. Add the bot token
 
 
 

@@ -15,13 +15,14 @@ from random import randrange
 
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
+from .secrets.discord_token import DISCORD_ACCESS_TOKEN
 
 
 import hc_constants
 
 gauth = GoogleAuth()
 # Try to load saved client credentials
-gauth.LoadCredentialsFile("mycreds.txt")
+gauth.LoadCredentialsFile("secrets/mycreds.txt")
 if gauth.credentials is None:
     # Authenticate if they're not there
     # This is what solved the issues:
@@ -36,7 +37,7 @@ else:
     # Initialize the saved creds
     gauth.Authorize()
 # Save the current credentials to a file
-gauth.SaveCredentialsFile("mycreds.txt")
+gauth.SaveCredentialsFile("secrets/mycreds.txt")
 drive = GoogleDrive(gauth)
 
 intents = discord.Intents.default()
@@ -75,11 +76,11 @@ async def check_cogs(ctx, cog_name):
         await bot.unload_extension(f"cogs.{cog_name}")
 
 client = discord.Client(intents=intents)
-TOKEN = ""
+
 
 scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
 
-creds = ServiceAccountCredentials.from_json_keyfile_name("morkcreds.json", scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name("secrets/morkcreds.json", scope)
 
 googleClient = gspread.authorize(creds)
 
@@ -120,7 +121,6 @@ macroList = {
 "art" : "Art matters is banned because it's generally vague and can cause arguments between players. (Except dreadmaw because funny)",
 "shut" : "shut\nshut\nshut\nshut\nshut\nshut\nshut\nshut\nshut\nshut\nshut",
 "capital" :"Capitalize the beginning of sentences, proper nouns, card names, subtypes, and each part of the cost in an activated ability. Don't capitalize keywords unless they begin a line.",
-#"welcome" : "Hey there! Welcome to hellscube. Obligatory pointing towards <#631289262519615499>, <#779399945144500254> and <#803384271766683668>. Especially the explanation for all our channels. Enjoy your stay!",
 "skylions" : "https://cdn.discordapp.com/attachments/636013910386016276/744772820550287411/sky_lions_meme.png",
 "bad2" : "If the joke is that the the design is bad then the design is bad.",
 "long" : "Cards with too much text tend to slow down draft and are overall bad for the cube, in general try to keep to 6 lines or less. Although this isn't a strict limit it's good to try not to make cards too long.",
@@ -627,24 +627,17 @@ async def quote(ctx, lookback=1):
     await ctx.send("You think you're fucking funny, bitch\n\nOh, I'll try to quote a ping it'll be funny and totally not annoying at all.\nYou're a bitch. You suck. Fuck you\n\nYou useless piece of shit. You absolute waste of space and air. You uneducated, ignorant, idiotic dumb swine, you’re an absolute embarrassment to humanity and all life as a whole. The magnitude of your failure just now is so indescribably massive that one hundred years into the future your name will be used as moniker of evil for heretics. Even if all of humanity put together their collective intelligence there is no conceivable way they could have thought up a way to fuck up on the unimaginable scale you just did. When Jesus died for our sins, he must not have seen the sacrilegious act we just witnessed you performing, because if he did he would have forsaken humanity long ago so that your birth may have never become reality. After you die, your skeleton will be displayed in a museum after being scientifically researched so that all future generations may learn not to generate your bone structure, because every tiny detail anyone may have in common with you degrades them to a useless piece of trash and a burden to society.")
     return
   user = message.author.name
-  if message.author.id == 819292395782275073 and ctx.channel.id != 758032520771141642:
+  if message.author.id == hc_constants.TIME_SPIRAL and ctx.channel.id != hc_constants.CUBE_CHANNEL:
     await ctx.send("The bot can't quote itself")
     return
-  if ctx.channel.id == hc_constants.UNKNOWN_CHANNEL:
-    fileID = "1RNw6b4wUck3HIw1kF7ewmtXE6gSmXSKt"
-    #nsfw quotes
-  else:
-    fileID = "1EdaLJl9Rs0RuigiivckOM1obPmQ99hMg"
-    #sfw quotes
+  fileID = getFileForChannelId(ctx.channel.id)
+
   await addToDrive(message.content, user, fileID)
   await ctx.send("\"" + message.content + "\"\n-" + user)
 
 @bot.command()
 async def randomquote(ctx, *user):
-  if ctx.channel.id == hc_constants.UNKNOWN_CHANNEL:
-    fileID = "1RNw6b4wUck3HIw1kF7ewmtXE6gSmXSKt"
-  else:
-    fileID = "1EdaLJl9Rs0RuigiivckOM1obPmQ99hMg"
+  fileID = getFileForChannelId(ctx.channel.id)
   file = drive.CreateFile({'id':fileID})
   quoteList = file.GetContentString().split(quoteSplit)
   for i in range(len(quoteList)):
@@ -717,12 +710,15 @@ async def randomCard(channel):
   card = allCards[random.choice(list(allCards.keys()))]
   await sendImage(card.getImg(), card.getName(), channel)
 
+
+def getFileForChannelId(channelId):
+  # nsfw else not
+  return "1RNw6b4wUck3HIw1kF7ewmtXE6gSmXSKt" if channelId == hc_constants.UNKNOWN_CHANNEL else "1EdaLJl9Rs0RuigiivckOM1obPmQ99hMg"
+
+
 @bot.command()
 async def searchquote(ctx, text, *user):
-  if ctx.channel.id == hc_constants.UNKNOWN_CHANNEL:
-    fileID = "1RNw6b4wUck3HIw1kF7ewmtXE6gSmXSKt"
-  else:
-    fileID = "1EdaLJl9Rs0RuigiivckOM1obPmQ99hMg"
+  fileID = getFileForChannelId(ctx.channel.id)
   file = drive.CreateFile({'id':fileID})
   quoteList = file.GetContentString().split(quoteSplit)
   for i in range(len(quoteList)):
@@ -909,7 +905,7 @@ async def on_raw_reaction_remove(payload):
     global log
     if payload.channel_id == hc_constants.SUBMISSIONS_CHANNEL:
 
-        serv = bot.get_guild(631288872814247966)
+        serv = bot.get_guild(hc_constants.SERVER_ID)
         user = serv.get_member(payload.user_id)
 
         log += f"{payload.message_id}: Removed {payload.emoji.name} from {payload.user_id} ({user.name}|{user.nick}) at {datetime.now()}\n"
@@ -1084,7 +1080,7 @@ manaEmojiDict = {
 async def gameNight(ctx, mode, game):
   #create, remove, get, lose, tag, list
   if mode == "create":
-    file = drive.CreateFile({'id':"1NBgIRjlWkd3Oh6TPcy26kkpHhrFroX2d"})
+    file = drive.CreateFile({'id':hc_constants.GAME_FILE_ID})
     output = file.GetContentString()
     if not game.lower() in output.replace('\r','').split("\n"):
       output = output + game.lower() + "\n"
@@ -1094,12 +1090,12 @@ async def gameNight(ctx, mode, game):
     else:
       await ctx.send("This game already exist.")
   if mode == "list":
-    output = drive.CreateFile({'id':"1NBgIRjlWkd3Oh6TPcy26kkpHhrFroX2d"}).GetContentString()
+    output = drive.CreateFile({'id':hc_constants.GAME_FILE_ID}).GetContentString()
     await ctx.send(output)
   if mode == "amount":
-    games = drive.CreateFile({'id':"1NBgIRjlWkd3Oh6TPcy26kkpHhrFroX2d"}).GetContentString().replace('\r','').split("\n")
+    games = drive.CreateFile({'id':hc_constants.GAME_FILE_ID}).GetContentString().replace('\r','').split("\n")
     amount = []
-    users = drive.CreateFile({'id':"1V0nMJtMMpMfr-VESS3RV5jIMEao2-gjo"}).GetContentString().replace('\r','').split("\n")
+    users = drive.CreateFile({'id':hc_constants.USER_GAME_FILE_ID}).GetContentString().replace('\r','').split("\n")
     for x in range(len(games)):
       amount.append(0)
       for i in users:
@@ -1116,10 +1112,10 @@ async def gameNight(ctx, mode, game):
   if mode == "remove":
     role = get(ctx.message.author.guild.roles, id=int(631288945044357141))
     if role in ctx.author.roles:
-      file1 = drive.CreateFile({'id':"1NBgIRjlWkd3Oh6TPcy26kkpHhrFroX2d"})
+      file1 = drive.CreateFile({'id':hc_constants.GAME_FILE_ID})
       gnRoles = file1.GetContentString()
       if game.lower() in gnRoles.replace('\r','').split("\n"):
-        file2 = drive.CreateFile({'id':"1V0nMJtMMpMfr-VESS3RV5jIMEao2-gjo"})
+        file2 = drive.CreateFile({'id':hc_constants.USER_GAME_FILE_ID})
         gnPeople = file2.GetContentString()
         options = gnPeople.replace('\r','').split("\n")
         for i in options:
@@ -1143,8 +1139,8 @@ async def gameNight(ctx, mode, game):
     else:
       await ctx.send("Removing games is only available to mods, probably tag one of them if you need the game removed.")
   if mode == "get":
-    if game.lower() in drive.CreateFile({'id':"1NBgIRjlWkd3Oh6TPcy26kkpHhrFroX2d"}).GetContentString().replace('\r','').split("\n"):
-      file = drive.CreateFile({'id':"1V0nMJtMMpMfr-VESS3RV5jIMEao2-gjo"})
+    if game.lower() in drive.CreateFile({'id':hc_constants.GAME_FILE_ID}).GetContentString().replace('\r','').split("\n"):
+      file = drive.CreateFile({'id':hc_constants.USER_GAME_FILE_ID})
       gnPeople = file.GetContentString()
       gnPeople = gnPeople + (str(ctx.author.id)) + "$%$%$" + game.lower() + "\n"
       file.SetContentString(gnPeople)
@@ -1153,8 +1149,8 @@ async def gameNight(ctx, mode, game):
     else:
       await ctx.send("This game doesn't exist.")
   if mode == "lose":
-    if game.lower() in drive.CreateFile({'id':"1NBgIRjlWkd3Oh6TPcy26kkpHhrFroX2d"}).GetContentString().replace('\r','').split("\n"):
-      file = drive.CreateFile({'id':"1V0nMJtMMpMfr-VESS3RV5jIMEao2-gjo"})
+    if game.lower() in drive.CreateFile({'id':hc_constants.GAME_FILE_ID}).GetContentString().replace('\r','').split("\n"):
+      file = drive.CreateFile({'id':hc_constants.USER_GAME_FILE_ID})
       gnPeople = file.GetContentString()
       options = gnPeople.replace('\r','').split("\n")
       for i in options:
@@ -1168,8 +1164,8 @@ async def gameNight(ctx, mode, game):
     else:
       await ctx.send("This game doesn't exist.")
   if mode == "tag":
-    if game.lower() in drive.CreateFile({'id':"1NBgIRjlWkd3Oh6TPcy26kkpHhrFroX2d"}).GetContentString().replace('\r','').split("\n"):
-      options = drive.CreateFile({'id':"1V0nMJtMMpMfr-VESS3RV5jIMEao2-gjo"}).GetContentString().replace('\r','').split("\n")
+    if game.lower() in drive.CreateFile({'id':hc_constants.GAME_FILE_ID}).GetContentString().replace('\r','').split("\n"):
+      options = drive.CreateFile({'id':hc_constants.USER_GAME_FILE_ID}).GetContentString().replace('\r','').split("\n")
       userIds = []
       for i in options:
         if "$%$%$" in i:
@@ -1182,8 +1178,8 @@ async def gameNight(ctx, mode, game):
     else:
       await ctx.send("This game doesn't exist.")
   if mode == "who":
-    if game.lower() in drive.CreateFile({'id':"1NBgIRjlWkd3Oh6TPcy26kkpHhrFroX2d"}).GetContentString().replace('\r','').split("\n"):
-      options = drive.CreateFile({'id':"1V0nMJtMMpMfr-VESS3RV5jIMEao2-gjo"}).GetContentString().replace('\r','').split("\n")
+    if game.lower() in drive.CreateFile({'id':hc_constants.GAME_FILE_ID}).GetContentString().replace('\r','').split("\n"):
+      options = drive.CreateFile({'id':hc_constants.USER_GAME_FILE_ID}).GetContentString().replace('\r','').split("\n")
       userIds = []
       for i in options:
         if "$%$%$" in i:
@@ -1200,7 +1196,7 @@ async def gameNight(ctx, mode, game):
     else:
       await ctx.send("This game doesn't exist.")
   if mode == "search":
-    options = drive.CreateFile({'id':"1V0nMJtMMpMfr-VESS3RV5jIMEao2-gjo"}).GetContentString().replace('\r','').split("\n")
+    options = drive.CreateFile({'id':hc_constants.USER_GAME_FILE_ID}).GetContentString().replace('\r','').split("\n")
     userGames = []
     for i in options:
       if "$%$%$" in i:
@@ -1222,7 +1218,7 @@ async def gameNight(ctx, mode, game):
 #for card-brazil and card-netherlands
 @bot.command()
 async def goodbye(ctx):
-  if ctx.channel.id == 699347167952765060 or ctx.channel.id == 799032671928975360:
+  if ctx.channel.id == hc_constants.MAYBE_BRAZIL_CHANNEL or ctx.channel.id == hc_constants.MAYBE_ONE_WORD_CHANNEL:
     messages = ctx.channel.history(limit=500)
     messages = [message async for message in messages]
     card = ""
@@ -1233,7 +1229,7 @@ async def goodbye(ctx):
         if messages[i].content[0] != "(":
           card = messages[i].content + " " + card
     card = card.replace("/n", "\n")
-    cubeChannel = bot.get_channel(758032520771141642)
+    cubeChannel = bot.get_channel(hc_constants.CUBE_CHANNEL)
     await cubeChannel.send(card)
     await ctx.channel.send(card)
 
@@ -1252,7 +1248,7 @@ async def BlueRed(ctx):
 
 @bot.command()
 async def menu(ctx):
-  if ctx.channel.id == 803384271766683668 or 654835483771273218:
+  if ctx.channel.id == hc_constants.RESOURCES_CHANNEL or 654835483771273218:
     embed = discord.Embed(title="Resources Menu", description="[Channel Explanation](https://discord.com/channels/631288872814247966/803384271766683668/803384426360078336)\n[Command List](https://discord.com/channels/631288872814247966/803384271766683668/803389199503982632)\n[Achievements](https://discord.com/channels/631288872814247966/803384271766683668/803389622247882782)\n[Database](https://discord.com/channels/631288872814247966/803384271766683668/803390530145878057)\n[Release Notes](https://discord.com/channels/631288872814247966/803384271766683668/803390718801346610)\n[Cubecobras](https://discord.com/channels/631288872814247966/803384271766683668/803391239294025748)\n[Tabletop Simulator](https://discord.com/channels/631288872814247966/803384271766683668/803391314095636490)")
     await ctx.send(embed=embed)
 
@@ -1312,10 +1308,10 @@ async def on_message(message):
     await message.add_reaction("👎")
   if message.channel.id == hc_constants.VETO_CHANNEL or message.channel.id == hc_constants.EDH_POLLS_CHANNEL:
     await message.add_reaction("👍")
-    await message.add_reaction(bot.get_emoji(786296441143558164))
+    await message.add_reaction(bot.get_emoji(hc_constants.CIRION_SPELLING))
     await message.add_reaction("👎")
-    await message.add_reaction(bot.get_emoji(636012952734007300))
-    await message.add_reaction(bot.get_emoji(636012953535119373))
+    await message.add_reaction(bot.get_emoji(hc_constants.MANA_GREEN))
+    await message.add_reaction(bot.get_emoji(hc_constants.MANA_WHITE))
     await message.add_reaction("🤮")
     await message.add_reaction("🤔")
     thread = await message.create_thread(name=message.content)
@@ -1345,7 +1341,7 @@ async def on_message(message):
     await sentMessage.add_reaction("❌")
     await message.delete()
 
-#  if message.channel.id == 752629686001074277 and BlueRed:
+#  if message.channel.id == hc_constants.ANOTHER_NOT_SURE_CHANNEL and BlueRed:
 #    await message.add_reaction("🟦")
 #    await message.add_reaction("🟥")
   if message.author.id in bannedUserIds:
@@ -1428,7 +1424,7 @@ async def compileveto(ctx):
       except:
         downvote = -1
       try:
-        errata = get(messages[i].reactions, emoji=bot.get_emoji(786296441143558164)).count
+        errata = get(messages[i].reactions, emoji=bot.get_emoji(hc_constants.CIRION_SPELLING)).count
       except:
         errata = -1
       if (len(messages[i].attachments) == 0):
@@ -1606,9 +1602,11 @@ async def kisses(ctx):
     current = KissSheet.cell(row, 3).value
     lifetime = KissSheet.cell(row, 4).value
     kissed = KissSheet.cell(row, 5).value
-    await ctx.send("You have " + current + " kisses to give!\nYou have earned " + lifetime + " kisses in total!\nYou have been kissed " + kissed + " times!")
+    await ctx.send(f'''You have {current} kisses to give!
+You have earned {lifetime} kisses in total!
+You have been kissed {kissed} times!''')
   else:
     await ctx.send("You have 0 kisses to give!\nYou have earned 0 kisses in total!\nYou have been kissed 0 times!")
 
 
-bot.run(TOKEN)
+bot.run(DISCORD_ACCESS_TOKEN)

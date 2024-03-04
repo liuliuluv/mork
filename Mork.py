@@ -12,6 +12,8 @@ from dpymenus import PaginatedMenu
 from discord.ext import commands, tasks
 from datetime import datetime, timezone, timedelta
 from random import randrange
+import is_mork
+from shared_vars import allCards
 
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
@@ -49,7 +51,7 @@ bot.remove_command('help')
 
 
 @bot.command()
-async def check_cogs(ctx, cog_name):
+async def check_cogs(ctx:commands.Context, cog_name):
     try:
         await bot.load_extension(f"cogs.{cog_name}")
     except commands.ExtensionAlreadyLoaded:
@@ -72,7 +74,7 @@ googleClient = gspread.authorize(creds)
 cardSheet = googleClient.open_by_key(hc_constants.HELLSCUBE_DATABASE).get_worksheet(0)
 cardSheetUnapproved = googleClient.open_by_key(hc_constants.HELLSCUBE_DATABASE).get_worksheet(1)
 print(cardSheet)
-allCards = {}
+
 
 bannedUserIds = []
 
@@ -354,7 +356,7 @@ def printCardNames(cards):
   return returnString
 
 @bot.command()
-async def search(ctx, *conditions):
+async def search(ctx:commands.Context, *conditions):
   restrictions = {}
   for i in conditions:
     if i.lower()[0:2] == "o:":
@@ -502,7 +504,7 @@ async def addToDrive(message, user, fileID):
   file.Upload()
 
 @bot.command()
-async def quote(ctx, lookback=1):
+async def quote(ctx:commands.Context, lookback=1):
   if lookback == 0:
     await ctx.send("^\nfucker")
     return
@@ -525,7 +527,7 @@ async def quote(ctx, lookback=1):
   await ctx.send("\"" + message.content + "\"\n-" + user)
 
 @bot.command()
-async def randomquote(ctx, *user):
+async def randomquote(ctx:commands.Context, *user):
   fileID = getFileForChannelId(ctx.channel.id)
   file = drive.CreateFile({'id':fileID})
   quoteList = file.GetContentString().split(quoteSplit)
@@ -547,7 +549,7 @@ async def randomquote(ctx, *user):
   await ctx.send("\"" + message.replace("\\n", "\n") + "\"\n-" + user)
 
 
-async def createQuoteMenu(ctx, quoteList):
+async def createQuoteMenu(ctx:commands.Context, quoteList):
 
   pageList = []
   for i in quoteList:
@@ -606,7 +608,7 @@ def getFileForChannelId(channelId):
 
 
 @bot.command()
-async def searchquote(ctx, text, *user):
+async def searchquote(ctx:commands.Context, text, *user):
   fileID = getFileForChannelId(ctx.channel.id)
   file = drive.CreateFile({'id':fileID})
   quoteList = file.GetContentString().split(quoteSplit)
@@ -664,7 +666,7 @@ async def checkSubmissions():
       downCount = downvote.count
       #if (upvote.count - downvote.count) < -10 and len(messages[i].attachments) > 0 and messageAge >= timedelta(days=1):
       #  await messages[i].delete()
-      if (upCount - downCount) > 24 and len(messages[i].attachments) > 0 and messageAge >= timedelta(days=1) and messages[i].author.id == hc_constants.MORK:
+      if (upCount - downCount) > 24 and len(messages[i].attachments) > 0 and messageAge >= timedelta(days=1) and is_mork(messages[i].author.id):
         if downCount == 1:
           user = await bot.fetch_user(hc_constants.EXALTED_ONE)
           await user.send("Verify " + messages[i].jump_url)
@@ -746,7 +748,7 @@ async def checkErrataSubmissions():
 #  for i in range(len(messages)):
 #      upvote = get(messages[i].reactions, emoji="👍")
 #      downvote = get(messages[i].reactions, emoji="👎")
-#      if len(messages[i].attachments) > 0 and messages[i].author.id == hc_constants.MORK:
+#      if len(messages[i].attachments) > 0 and is_mork(messages[i].author.id):
 #        file = await messages[i].attachments[0].to_file()
 #        copy = await messages[i].attachments[0].to_file()
 #        copy2 = await messages[i].attachments[0].to_file()
@@ -790,7 +792,7 @@ async def checkErrataSubmissions():
 log = ""
 
 @bot.command(name="dumplog")
-async def _dumplog(ctx):
+async def _dumplog(ctx:commands.Context):
     global log
     if ctx.author.id == hc_constants.EXALTED_ONE:
         with open("log.txt", 'a', encoding='utf8') as file:
@@ -799,32 +801,13 @@ async def _dumplog(ctx):
             print("log dumped")
 
 @bot.command()
-async def getMessage(ctx, id):
+async def getMessage(ctx:commands.Context, id):
   subChannel = bot.get_channel(hc_constants.SUBMISSIONS_CHANNEL)
   message = await subChannel.fetch_message(id)
   await ctx.send(message.jump_url)
 
 
-@bot.event
-async def on_ready():
 
-  global log
-  print(f'{bot.user.name} has connected to Discord!')
-  # debug 
-  return 
-
-  nameList = cardSheet.col_values(1)[3:]
-  imgList = cardSheet.col_values(2)[3:]
-  creatorList = cardSheet.col_values(3)[3:]
-
-  for i in range(len(nameList)):
-    allCards[nameList[i].lower()] = Card(nameList[i], imgList[i], creatorList[i])
-  bot.loop.create_task(status_task())
-  while True:
-    await asyncio.sleep(3600)
-    with open("log.txt", 'a', encoding='utf8') as file:
-      file.write(log)
-      log = ""
 
 async def status_task():
   # debug
@@ -841,7 +824,7 @@ async def status_task():
     await asyncio.sleep(300)
 
 @bot.command()
-async def macro(ctx, thing, *args):
+async def macro(ctx:commands.Context, thing, *args):
   if thing == "help":
     message = "Macros are:\nJoke [word]\n"
     for name in hc_constants.macroList.keys():
@@ -907,7 +890,7 @@ async def rulings(channel, *cardName):
   await channel.send(message)
 
 @bot.command()
-async def gameNight(ctx, mode, game):
+async def gameNight(ctx:commands.Context, mode, game):
   #create, remove, get, lose, tag, list
   if mode == "create":
     file = drive.CreateFile({'id':hc_constants.GAME_FILE_ID})
@@ -1047,7 +1030,7 @@ async def gameNight(ctx, mode, game):
 
 #for card-brazil and card-netherlands
 @bot.command()
-async def goodbye(ctx):
+async def goodbye(ctx:commands.Context):
   if ctx.channel.id == hc_constants.MAYBE_BRAZIL_CHANNEL or ctx.channel.id == hc_constants.MAYBE_ONE_WORD_CHANNEL:
     messages = ctx.channel.history(limit=500)
     messages = [message async for message in messages]
@@ -1064,7 +1047,7 @@ async def goodbye(ctx):
     await ctx.channel.send(card)
 
 @bot.command()
-async def BlueRed(ctx):
+async def BlueRed(ctx:commands.Context):
   if ctx.author.id == hc_constants.CIRION:
     global BlueRed
     if BlueRed:
@@ -1077,56 +1060,18 @@ async def BlueRed(ctx):
     await ctx.send("cirion Only Command")
 
 @bot.command()
-async def menu(ctx):
+async def menu(ctx:commands.Context):
   if ctx.channel.id == hc_constants.RESOURCES_CHANNEL or 654835483771273218:
     embed = discord.Embed(title="Resources Menu", description="[Channel Explanation](https://discord.com/channels/631288872814247966/803384271766683668/803384426360078336)\n[Command List](https://discord.com/channels/631288872814247966/803384271766683668/803389199503982632)\n[Achievements](https://discord.com/channels/631288872814247966/803384271766683668/803389622247882782)\n[Database](https://discord.com/channels/631288872814247966/803384271766683668/803390530145878057)\n[Release Notes](https://discord.com/channels/631288872814247966/803384271766683668/803390718801346610)\n[Cubecobras](https://discord.com/channels/631288872814247966/803384271766683668/803391239294025748)\n[Tabletop Simulator](https://discord.com/channels/631288872814247966/803384271766683668/803391314095636490)")
     await ctx.send(embed=embed)
 
 @bot.command()
-async def help(ctx):
+async def help(ctx:commands.Context):
   await ctx.send("https://discord.com/channels/631288872814247966/803384271766683668/803389199503982632")
-"""
-@bot.command()
-async def createtable(ctx):
-  if ctx.author.id == hc_constants.EXALTED_ONE:
-    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-    cur = conn.cursor()
-    cur.execute('''CREATE TABLE [IF NOT EXISTS] POPCORN
-      (CHANNEL TEXT PRIMARY KEY  NOT NULL,
-      CARDTEXT TEXT);''')
-    print("popcorn table created")
-    cur.execute("INSERT INTO POPCORN(CHANNEL,CARDTEXT) VALUES ('Bot Test','')")
-    print("data inserted")
-    conn.commit()
-    conn.close()
-    ctx.channel.send("finished")
-"""
 
-@bot.event
-async def on_raw_reaction_add(reaction):
-  # debug
-  return
-  if str(reaction.emoji) == "❌" and reaction.user_id != hc_constants.MORK:
-    guild = bot.get_guild(reaction.guild_id)
-    channel = guild.get_channel(reaction.channel_id)
-    message = await channel.fetch_message(reaction.message_id)
-    if reaction.member in message.mentions and message.author.id == hc_constants.MORK:
-      await message.delete()
-      return
-    if message.reference:
-      messageReference = await channel.fetch_message(message.reference.message_id)
-      if reaction.member == messageReference.author and message.author.id == hc_constants.MORK:
-        await message.delete()
-        return
 
-@bot.event
-async def on_thread_create(thread):
-    try:
-        await thread.join()
-    except:
-        print("Can't join that thread.")
 
-# # debug
+# debug
 # @bot.event
 # async def on_message(message):
 # # debug
@@ -1220,7 +1165,7 @@ def vetoAnnouncementHelper(cardArray, announcement, annIndex):
   return annIndex
 
 @bot.command()
-async def compileveto(ctx):
+async def compileveto(ctx:commands.Context):
   if ctx.channel.id == hc_constants.VETO_DISCUSSION_CHANNEL:
     vetoChannel = bot.get_channel(hc_constants.VETO_CHANNEL)
     vetoDiscussionChannel = bot.get_channel(hc_constants.VETO_DISCUSSION_CHANNEL)
@@ -1261,13 +1206,17 @@ async def compileveto(ctx):
       elif (messageAge < timedelta(days=1)):
         earlyCards.append(messages[i])
 
-      elif (errata > 4 and errata >= upvote and errata >= downvote):
+      elif (errata > 4
+            and errata >= upvote
+            and errata >= downvote):
         errataedCards.append(messages[i])
         await messages[i].add_reaction("✅")
         thread = messages[i].guild.get_channel_or_thread(messages[i].id)
         await thread.edit(archived = True)
 
-      elif (upvote > 4 and upvote >= downvote and upvote >= errata):
+      elif (upvote > 4
+            and upvote >= downvote
+            and upvote >= errata):
         acceptedCards.append(messages[i])
         await messages[i].add_reaction("✅")
         thread = messages[i].guild.get_channel_or_thread(messages[i].id)
@@ -1360,7 +1309,7 @@ async def compileveto(ctx):
     await ctx.send("Veto Council Only")
 
 @bot.command(aliases=['awardkisses'])
-async def awardkiss(ctx, user, number = 1):
+async def awardkiss(ctx:commands.Context, user, number = 1):
   moderators_list = KissSheet.col_values(1)
   print(ctx.author.id)
   print(moderators_list)
@@ -1388,7 +1337,7 @@ async def awardkiss(ctx, user, number = 1):
     await ctx.send("Only verified kiss arbiters can award kisses! Talk to Zaxer to inquire about becoming a verified kiss arbiter.")
 
 @bot.command()
-async def kiss(ctx, user):
+async def kiss(ctx:commands.Context, user):
   kissers_list = KissSheet.col_values(2)
   if str(ctx.author.id) in kissers_list:
     row = kissers_list.index(str(ctx.author.id)) + 1
@@ -1421,7 +1370,7 @@ async def kiss(ctx, user):
     await ctx.send("You don't have any kisses to send!")
 
 @bot.command()
-async def kisses(ctx):
+async def kisses(ctx:commands.Context):
   kissers_list = KissSheet.col_values(2)
   if str(ctx.author.id) in kissers_list:
     row = kissers_list.index(str(ctx.author.id)) + 1

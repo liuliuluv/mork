@@ -4,6 +4,8 @@ ob["a"]=1
 print(ob)
 
 
+[a,b,c]=[1,2,4]
+print(b)
 
 print(
         """You think you're fucking funny, bitch

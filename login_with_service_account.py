@@ -1,5 +1,4 @@
 from pydrive2.auth import GoogleAuth
-from pydrive2.drive import GoogleDrive
 
 def login_with_service_account():
     """

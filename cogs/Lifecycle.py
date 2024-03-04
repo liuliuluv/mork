@@ -1,9 +1,17 @@
-from discord import RawReactionActionEvent
+from discord import  RawReactionActionEvent
+import discord
 from discord.ext import commands
 from discord.message import Message
+from discord.utils import get
 
 import hc_constants
-import is_mork
+from is_mork import is_mork
+from printCardImages import printCardImages
+from shared_vars import intents
+
+
+client = discord.Client(intents=intents)
+bannedUserIds = []
 
 class LifecycleCog(commands.Cog):
     def __init__(self, bot:commands.Bot):
@@ -72,6 +80,63 @@ class LifecycleCog(commands.Cog):
             with open("log.txt", 'a', encoding='utf8') as file:
                 file.write(log)
                 log = ""
+
+
+    @commands.Cog.listener()
+    async def on_message(self,message:Message):
+
+        #debug
+        return
+        if (message.author == client.user
+            or message.author.bot
+            or message.author.id in bannedUserIds):
+            return
+        #if message.channel.id == hc_constants.SUBMISSIONS_CHANNEL and len(message.attachments) > 0:
+        #  await message.add_reaction("👍")
+        #  await message.add_reaction("👎")
+        if message.channel.id == hc_constants.HELLS_UNO_CHANNEL:
+            await message.add_reaction("👍")
+            await message.add_reaction("👎")
+        if message.channel.id == hc_constants.VETO_CHANNEL or message.channel.id == hc_constants.EDH_POLLS_CHANNEL:
+            await message.add_reaction("👍")
+            await message.add_reaction(self.bot.get_emoji(hc_constants.CIRION_SPELLING))
+            await message.add_reaction("👎")
+            await message.add_reaction(self.bot.get_emoji(hc_constants.MANA_GREEN))
+            await message.add_reaction(self.bot.get_emoji(hc_constants.MANA_WHITE))
+            await message.add_reaction("🤮")
+            await message.add_reaction("🤔")
+            thread = await message.create_thread(name=message.content)
+            role = get(message.author.guild.roles, id=int(798689768379908106))
+            await thread.send(role.mention)
+        ##    for user in role.members:
+        ##        await thread.add_user(user)
+        ##        await asyncio.sleep(1)
+        if message.channel.id == hc_constants.FOUR_ZERO_ERRATA_SUBMISSIONS_CHANNEL:
+            if "@" in message.content:
+                return
+            sentMessage = await message.channel.send(content = message.content)
+            await sentMessage.add_reaction("👍")
+            await sentMessage.add_reaction("👎")
+            await message.delete()
+        if message.channel.id == hc_constants.SUBMISSIONS_CHANNEL and len(message.attachments) > 0:
+
+            if "@" in message.content:
+                return
+            file = await message.attachments[0].to_file()
+            sentMessage = await message.channel.send(content = message.content + " by " + message.author.mention, file = file)
+            await sentMessage.add_reaction("👍")
+            await sentMessage.add_reaction("👎")
+            await sentMessage.add_reaction("❌")
+            await message.delete()
+        if message.channel.id == hc_constants.ZBEAN_ICON_CHANNEL:
+            role = get(message.author.guild.roles, id=int(770642233598672906))
+            await message.author.add_roles(role)
+        if "{{" in message.content:
+            await printCardImages(message)
+        try:
+            await self.bot.process_commands(message)
+        except:
+            ...
 
 async def setup(bot:commands.Bot):
     await bot.add_cog(LifecycleCog(bot))

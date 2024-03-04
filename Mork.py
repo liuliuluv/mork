@@ -4,19 +4,15 @@ import discord
 import asyncio
 import random
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 import pprint as pp
 from discord.utils import get
-from discord import Embed
-from dpymenus import PaginatedMenu
-from discord.ext import commands, tasks
+
+from discord.ext import commands
 from datetime import datetime, timezone, timedelta
 from random import randrange
+from cardNameRequest import cardNameRequest 
+from shared_vars import allCards,intents,googleClient,drive
 import is_mork
-from shared_vars import allCards
-
-from pydrive2.auth import GoogleAuth
-from pydrive2.drive import GoogleDrive
 
 from login_with_service_account import login_with_service_account
 from secrets.discord_token import DISCORD_ACCESS_TOKEN
@@ -24,14 +20,6 @@ from secrets.discord_token import DISCORD_ACCESS_TOKEN
 
 import hc_constants
 
-gauth = login_with_service_account()
-drive = GoogleDrive(gauth)
-
-intents = discord.Intents.default()
-intents.members = True
-intents.messages = True
-intents.message_content = True
-intents.guilds = True
 
 
 class MyBot(commands.Bot):
@@ -41,7 +29,9 @@ class MyBot(commands.Bot):
           'cogs.SpecificCards',
           'cogs.Messages',
           'cogs.Roles',
-          'cogs.Lifecycle'
+          'cogs.Lifecycle',
+          'cogs.ZaxersKisses',
+          'cogs.Quotes'
           ]
         for i in initialExtensions:
             await self.load_extension(i)
@@ -62,28 +52,16 @@ async def check_cogs(ctx:commands.Context, cog_name):
         await ctx.send("Cog is unloaded")
         await bot.unload_extension(f"cogs.{cog_name}")
 
-client = discord.Client(intents=intents)
-
-
-scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
-
-creds = ServiceAccountCredentials.from_json_keyfile_name("secrets/client_secrets.json", scope)
-
-googleClient = gspread.authorize(creds)
 
 cardSheet = googleClient.open_by_key(hc_constants.HELLSCUBE_DATABASE).get_worksheet(0)
 cardSheetUnapproved = googleClient.open_by_key(hc_constants.HELLSCUBE_DATABASE).get_worksheet(1)
 print(cardSheet)
 
-
-bannedUserIds = []
-
 statusList = ["Haha Gottem in 2020", "Hugh Man in EDH", "the funny dreadmaw card", "Hellscube Victory in Competative", "with old companion rules", "Obama tribal EDH", "irefeT tribal", "Temple of @creator", "cheat big shit out", "v1.0", "2/3 Corpse Knight", "Forbiddenest Ritual for value", "71 lands and Haha Gottem", "PICKLE K'RRIK!", "\"colorless\" card draw", "HellsEdh", "hellscube", "Hellscube Jumpstart", "comboless Zero with Nothing", "with MaRo's feelings", "with Exalted's sanity", "Slot Filler for draw cards equal to 2 minus one", "Epicnessbrian tribal", "a minigame", "a subgame", "a supergame", "The First Pick", "Tendrils of Shahrazad", "hide and seek with Liu Bei's wallet", "with slots", "Redundant Acceleration for 1 card", "with !podcast", "with #brainstorming-shitposts", "with no banlist", "Hatebear With Useful Abilities", "JacobsRedditUsername Tribal", "white card draw!!1!?1!??!?", "Force of Bill for 5 mana", "with bears. So... many... bears...", "Epic Games", "6-mana 1/1s", "a full playset of worm", "all of the murder but _ cycle", "with the idea of skipping to 3.0", "1 cmc super friends", "all the creator lands", "strip hellscube vintage", "cooldownguy vintage", "6-color goodstuff", "a 41 card draft deck", "infinite basics in the sideboard", "10.000 Islands in the main", "#avatar in discord", "Avatar of Discord, Please spam Attack. Please", "Avatar of Discord, Please spam Defence. Please", "Avatar of Discord, Please spam Evasion. Please", "Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing...", "blue bears"]
 
 
 
-authorSplit = "$#$#$"
-quoteSplit = ";%;%;"
+
 global blueRed
 blueRed = False
 
@@ -101,7 +79,6 @@ class Card:
 
 cardSheetSearch = googleClient.open("Hellscube Database").worksheet("Database Bot Read")
 
-KissSheet = googleClient.open("Hellscube Database").worksheet("Zaxer's Wacky Database Sheet")
 
 
 cardsDataSearch = cardSheetSearch.col_values(2)
@@ -430,8 +407,6 @@ async def search(ctx:commands.Context, *conditions):
   for msg in messages:
     await ctx.send(msg)
 
-
-
 async def sendImage(url, cardname, channel):
   async with aiohttp.ClientSession() as session:
     async with session.get(url) as resp:
@@ -440,132 +415,6 @@ async def sendImage(url, cardname, channel):
         return
       data = io.BytesIO(await resp.read())
       await channel.send(file=discord.File(data, url))
-
-async def sendImageReply(url, cardname, message):
-  async with aiohttp.ClientSession() as session:
-    async with session.get(url) as resp:
-      if resp.status != 200:
-        await message.reply('Something went wrong while getting the link for ' + cardname + '. Wait for @exalted to fix it.')
-        return
-      data = io.BytesIO(await resp.read())
-      sentMessage = await message.reply(file=discord.File(data, url), mention_author=False)
-      await sentMessage.add_reaction("❌")
-
-async def similarity(name, key):
-  weight = 0
-  for i in range(len(key)):
-    for j in range(len(name)):
-      for x in range(1, min( len(name) - j , len(key) - i ) + 1):
-        if key[i:i+x] != name[j:j+x] or x == min( len(name) - j , len(key) - i ):
-          weight += max((x-1) * (x-1) -1, 0)
-          break
-  if name == key or name + " " == key:
-    weight = 10000000
-  return weight
-
-async def cardNameRequest(requestName):
-  maxWeight = 1
-  maxWeightName = ""
-  for cardName in allCards.keys():
-    currentWeight = await similarity(cardName, requestName)
-    if currentWeight > maxWeight:
-      maxWeight = currentWeight
-      maxWeightName = cardName
-    elif currentWeight == maxWeight:
-      if len(cardName) < len(maxWeightName):
-        maxWeightName = cardName
-  return maxWeightName
-
-
-async def printCardImages(message):
-  messageText = message.content.lower().split("{{")[1:]
-  for i in range(len(messageText)):
-    messageText[i] = messageText[i].split("}}")[0]
-  requestedCards = []
-  if len(messageText) > 10 and message.author.id != hc_constants.CIRION:
-    await message.reply("Don't call more than 10 cards per message, final warning, keep trying and you get blacklisted from the bot. Blame dRafter for this if you're actually trying to use the bot.")
-    return
-  for cardName in messageText:
-    requestedCards.append(await cardNameRequest(cardName))
-  for post in requestedCards:
-    if post == "":
-      await message.reply("No Match Found!", mention_author=False)
-    else:
-      await sendImageReply(allCards[post].getImg(), allCards[post].getName(), message)
-
-async def addToDrive(message, user, fileID):
-  text = ";%;%;"
-  text += message
-  text += authorSplit
-  text += user
-  file = drive.CreateFile({'id':fileID})
-  update = file.GetContentString() + text
-  file.SetContentString(update)
-  file.Upload()
-
-@bot.command()
-async def quote(ctx:commands.Context, lookback=1):
-  if lookback == 0:
-    await ctx.send("^\nfucker")
-    return
-  if lookback>100:
-    await ctx.send("Can't look back more than 100 messages")
-    return
-  messages = ctx.history(limit=lookback+1)
-  messages = [message async for message in messages]
-  message = messages[lookback]
-  if "@" in message.content:
-    await ctx.send("You think you're fucking funny, bitch\n\nOh, I'll try to quote a ping it'll be funny and totally not annoying at all.\nYou're a bitch. You suck. Fuck you\n\nYou useless piece of shit. You absolute waste of space and air. You uneducated, ignorant, idiotic dumb swine, you’re an absolute embarrassment to humanity and all life as a whole. The magnitude of your failure just now is so indescribably massive that one hundred years into the future your name will be used as moniker of evil for heretics. Even if all of humanity put together their collective intelligence there is no conceivable way they could have thought up a way to fuck up on the unimaginable scale you just did. When Jesus died for our sins, he must not have seen the sacrilegious act we just witnessed you performing, because if he did he would have forsaken humanity long ago so that your birth may have never become reality. After you die, your skeleton will be displayed in a museum after being scientifically researched so that all future generations may learn not to generate your bone structure, because every tiny detail anyone may have in common with you degrades them to a useless piece of trash and a burden to society.")
-    return
-  user = message.author.name
-  if message.author.id == hc_constants.TIME_SPIRAL and ctx.channel.id != hc_constants.CUBE_CHANNEL:
-    await ctx.send("The bot can't quote itself")
-    return
-  fileID = getFileForChannelId(ctx.channel.id)
-
-  await addToDrive(message.content, user, fileID)
-  await ctx.send("\"" + message.content + "\"\n-" + user)
-
-@bot.command()
-async def randomquote(ctx:commands.Context, *user):
-  fileID = getFileForChannelId(ctx.channel.id)
-  file = drive.CreateFile({'id':fileID})
-  quoteList = file.GetContentString().split(quoteSplit)
-  for i in range(len(quoteList)):
-    quoteList[i] = quoteList[i].split(authorSplit)
-  if user:
-    user = " ".join(user)
-    tempList=[]
-    for i in quoteList:
-      if i[1].lower() == user.lower():
-        tempList.append(i)
-    quoteList=tempList
-    if quoteList == []:
-      await ctx.send("No quotes by " + user + " found. :(")
-      return
-  quote = random.choice(quoteList)
-  message = quote[0]
-  user = quote[1]
-  await ctx.send("\"" + message.replace("\\n", "\n") + "\"\n-" + user)
-
-
-async def createQuoteMenu(ctx:commands.Context, quoteList):
-
-  pageList = []
-  for i in quoteList:
-    page = Embed(title=i[1], description=i[0])
-    pageList.append(page)
-
-  menu = (PaginatedMenu(ctx)
-         .set_timeout(100)
-         .add_pages(pageList)
-         .show_skip_buttons()
-         .hide_cancel_button()
-         .persist_on_close()
-         .show_page_numbers()
-         .show_command_message()
-         )
-  await menu.open()
 
 @bot.command()
 async def randomReject(channel, num=0):
@@ -602,46 +451,6 @@ async def randomCard(channel):
   await sendImage(card.getImg(), card.getName(), channel)
 
 
-def getFileForChannelId(channelId):
-  # nsfw file else sfw one ??????
-  return "1RNw6b4wUck3HIw1kF7ewmtXE6gSmXSKt" if channelId == hc_constants.UNKNOWN_CHANNEL else "1EdaLJl9Rs0RuigiivckOM1obPmQ99hMg"
-
-
-@bot.command()
-async def searchquote(ctx:commands.Context, text, *user):
-  fileID = getFileForChannelId(ctx.channel.id)
-  file = drive.CreateFile({'id':fileID})
-  quoteList = file.GetContentString().split(quoteSplit)
-  for i in range(len(quoteList)):
-    quoteList[i] = quoteList[i].split(authorSplit)
-  if user:
-    user = " ".join(user)
-    tempList=[]
-    for i in quoteList:
-      if i[1].lower() == user.lower():
-        tempList.append(i)
-    quoteList=tempList
-    if quoteList == []:
-      await ctx.send("No quotes by " + user + " found. :(")
-      return
-  tempList=[]
-  for i in quoteList:
-    if text.lower() in i[0].lower():
-      tempList.append(i)
-  quoteList=tempList
-  if quoteList == []:
-    await ctx.send("No quotes with the text " + text + " found. :(")
-    return
-  if len(quoteList) > 50:
-    await ctx.send(str(len(quoteList)) + " quotes found, that's too many, be more specific please")
-    return
-  elif len(quoteList) > 2:
-    await createQuoteMenu(ctx, quoteList)
-  else:
-    message = ""
-    for i in quoteList:
-      message += "\"" + i[0].replace("\\n", "\n") + "\"\n-" + i[1] + "\n\n"
-    await ctx.send(message)
 
 async def checkSubmissions():
   subChannel = bot.get_channel(hc_constants.SUBMISSIONS_CHANNEL)
@@ -666,7 +475,7 @@ async def checkSubmissions():
       downCount = downvote.count
       #if (upvote.count - downvote.count) < -10 and len(messages[i].attachments) > 0 and messageAge >= timedelta(days=1):
       #  await messages[i].delete()
-      if (upCount - downCount) > 24 and len(messages[i].attachments) > 0 and messageAge >= timedelta(days=1) and is_mork(messages[i].author.id):
+      if (upCount - downCount) > 24 and len(messages[i].attachments) > 0 and messageAge >= timedelta(days=1) and is_mork.is_mork(messages[i].author.id):
         if downCount == 1:
           user = await bot.fetch_user(hc_constants.EXALTED_ONE)
           await user.send("Verify " + messages[i].jump_url)
@@ -732,6 +541,8 @@ async def checkErrataSubmissions():
         await messages[i].add_reaction("✅")
   print("------done checking errata submissions-----")
 
+# not sure what all of this next stuff is
+  
 # @bot.command()
 # async def checkSubTest(ctx):
 #  subChannel = bot.get_channel(1005628044075090041)
@@ -806,9 +617,6 @@ async def getMessage(ctx:commands.Context, id):
   message = await subChannel.fetch_message(id)
   await ctx.send(message.jump_url)
 
-
-
-
 async def status_task():
   # debug
   print('status_task loop')
@@ -824,16 +632,14 @@ async def status_task():
     await asyncio.sleep(300)
 
 @bot.command()
-async def macro(ctx:commands.Context, thing, *args):
+async def macro(ctx:commands.Context, thing:str, *args):
   if thing == "help":
     message = "Macros are:\nJoke [word]\n"
     for name in hc_constants.macroList.keys():
       if type(hc_constants.macroList[name]) is str:
-        message += name
-        message += "\n"
+        message += f"{name}\n"
       else:
-        message += name
-        message += "\n"
+        message += f"{name}\n"
         for subname in hc_constants.macroList[name]:
           message += f"    {subname}\n"
     await ctx.send(message)
@@ -917,10 +723,7 @@ async def gameNight(ctx:commands.Context, mode, game):
             amount[x] += 1
     result = "Amount of users per game:\n"
     for i in range(len(amount)):
-      result += games[i]
-      result += ": "
-      result += str(amount[i])
-      result += "\n"
+      result += f"{games[i]: {str(amount[i])}}\n"
     await ctx.send(result)
   if mode == "remove":
     role = get(ctx.message.author.guild.roles, id=int(631288945044357141))
@@ -1061,74 +864,13 @@ async def BlueRed(ctx:commands.Context):
 
 @bot.command()
 async def menu(ctx:commands.Context):
-  if ctx.channel.id == hc_constants.RESOURCES_CHANNEL or 654835483771273218:
+  if ctx.channel.id == hc_constants.RESOURCES_CHANNEL or hc_constants.BOT_TEST_CHANNEL:
     embed = discord.Embed(title="Resources Menu", description="[Channel Explanation](https://discord.com/channels/631288872814247966/803384271766683668/803384426360078336)\n[Command List](https://discord.com/channels/631288872814247966/803384271766683668/803389199503982632)\n[Achievements](https://discord.com/channels/631288872814247966/803384271766683668/803389622247882782)\n[Database](https://discord.com/channels/631288872814247966/803384271766683668/803390530145878057)\n[Release Notes](https://discord.com/channels/631288872814247966/803384271766683668/803390718801346610)\n[Cubecobras](https://discord.com/channels/631288872814247966/803384271766683668/803391239294025748)\n[Tabletop Simulator](https://discord.com/channels/631288872814247966/803384271766683668/803391314095636490)")
     await ctx.send(embed=embed)
 
 @bot.command()
 async def help(ctx:commands.Context):
   await ctx.send("https://discord.com/channels/631288872814247966/803384271766683668/803389199503982632")
-
-
-
-# debug
-# @bot.event
-# async def on_message(message):
-# # debug
-#   return
-#   if (message.author == client.user
-#       or message.author.bot
-#       or message.author.id in bannedUserIds):
-#     return
-#   #if message.channel.id == hc_constants.SUBMISSIONS_CHANNEL and len(message.attachments) > 0:
-#   #  await message.add_reaction("👍")
-#   #  await message.add_reaction("👎")
-#   if message.channel.id == hc_constants.HELLS_UNO_CHANNEL:
-#     await message.add_reaction("👍")
-#     await message.add_reaction("👎")
-#   if message.channel.id == hc_constants.VETO_CHANNEL or message.channel.id == hc_constants.EDH_POLLS_CHANNEL:
-#     await message.add_reaction("👍")
-#     await message.add_reaction(bot.get_emoji(hc_constants.CIRION_SPELLING))
-#     await message.add_reaction("👎")
-#     await message.add_reaction(bot.get_emoji(hc_constants.MANA_GREEN))
-#     await message.add_reaction(bot.get_emoji(hc_constants.MANA_WHITE))
-#     await message.add_reaction("🤮")
-#     await message.add_reaction("🤔")
-#     thread = await message.create_thread(name=message.content)
-#     role = get(message.author.guild.roles, id=int(798689768379908106))
-#     await thread.send(role.mention)
-# ##    for user in role.members:
-# ##        await thread.add_user(user)
-# ##        await asyncio.sleep(1)
-#   if message.channel.id == hc_constants.FOUR_ZERO_ERRATA_SUBMISSIONS_CHANNEL:
-#     if "@" in message.content:
-#         return
-#     sentMessage = await message.channel.send(content = message.content)
-#     await sentMessage.add_reaction("👍")
-#     await sentMessage.add_reaction("👎")
-#     await message.delete()
-#   if message.channel.id == hc_constants.SUBMISSIONS_CHANNEL and len(message.attachments) > 0:
-#     # debug time, don't double submission management
-#     return
-#     if "@" in message.content:
-#         return
-#     file = await message.attachments[0].to_file()
-#     sentMessage = await message.channel.send(content = message.content + " by " + message.author.mention, file = file)
-#     await sentMessage.add_reaction("👍")
-#     await sentMessage.add_reaction("👎")
-#     await sentMessage.add_reaction("❌")
-#     await message.delete()
-#   if message.channel.id == hc_constants.ZBEAN_ICON_CHANNEL:
-#     role = get(message.author.guild.roles, id=int(770642233598672906))
-#     await message.author.add_roles(role)
-#   if "{{" in message.content:
-#     await printCardImages(message)
-#   try:
-#     await bot.process_commands(message)
-#   except:
-#     ...
-
-
 
 # TODO: is this used???
 #@bot.command()
@@ -1298,6 +1040,7 @@ async def compileveto(ctx:commands.Context):
 ##    for vetoedCard in vetoHell:
 ##      file = await vetoedCard.attachments[0].to_file()
 ##      copy = await vetoedCard.attachments[0].to_file() # i have no idea why the function to repost card messages was coded with this weird "copy" thing. If you're reading this, help.
+    ## I'm sorry, i can't help. oh shit i deleted a copy line a while ago. hope we didnit need that
 ##      cardMessage = vetoedCard.content
 ##      await vetoChannel.send(content=cardMessage, file=copy)
 
@@ -1308,80 +1051,7 @@ async def compileveto(ctx:commands.Context):
   else:
     await ctx.send("Veto Council Only")
 
-@bot.command(aliases=['awardkisses'])
-async def awardkiss(ctx:commands.Context, user, number = 1):
-  moderators_list = KissSheet.col_values(1)
-  print(ctx.author.id)
-  print(moderators_list)
-  print(ctx.author.id in moderators_list)
-  if str(ctx.author.id) in moderators_list:
-    member = await commands.MemberConverter().convert(ctx, user)
-    members_list = KissSheet.col_values(2)
-    print(members_list)
-    print(str(member.id))
-    if str(member.id) in members_list:
-      row = members_list.index(str(member.id)) + 1
-    else:
-      row = len(members_list) + 1
-      KissSheet.update_cell(row, 2, str(member.id))
-      KissSheet.update_cell(row, 3, 0)
-      KissSheet.update_cell(row, 4, 0)
-      KissSheet.update_cell(row, 5, 0)
 
-    currentKisses = int(KissSheet.cell(row, 3).value) + number
-    lifetimeKisses = int(KissSheet.cell(row, 4).value) + number
-    KissSheet.update_cell(row, 3, currentKisses)
-    KissSheet.update_cell(row, 4, lifetimeKisses)
-    await ctx.send(str(user) + " earned " + str(number) + " kisses! Total: " + str(currentKisses) + ". \nUse !kiss @user to give a kiss, or !kisses to check your lifetime kiss stats.")
-  else:
-    await ctx.send("Only verified kiss arbiters can award kisses! Talk to Zaxer to inquire about becoming a verified kiss arbiter.")
-
-@bot.command()
-async def kiss(ctx:commands.Context, user):
-  kissers_list = KissSheet.col_values(2)
-  if str(ctx.author.id) in kissers_list:
-    row = kissers_list.index(str(ctx.author.id)) + 1
-    kissCount =  int(KissSheet.cell(row, 3).value)
-    if kissCount > 0:
-      try:
-        KissedMember = await commands.MemberConverter().convert(ctx, user)
-      except:
-        await ctx.send("Something went wrong. Be sure to ping the user you want me to kiss! Maybe that's what went wrong?")
-      if (KissedMember == ctx.author):
-        await ctx.send("You can't send a kiss to yourself! How would that even work??")
-        return
-      if str(KissedMember.id) in kissers_list:
-        kissedrow = kissers_list.index(str(KissedMember.id)) + 1
-      else:
-        kissedrow = len(kissers_list) + 1
-        KissSheet.update_cell(kissedrow, 2, str(KissedMember.id))
-        KissSheet.update_cell(kissedrow, 3, 0)
-        KissSheet.update_cell(kissedrow, 4, 0)
-        KissSheet.update_cell(kissedrow, 5, 0)
-      KissSheet.update_cell(kissedrow, 5, int(KissSheet.cell(kissedrow, 5).value) + 1)
-      MessageList = ["mmmmwah!", "mwah!", "smooch!", "*kisses u*", "mwa!", "dis a kis from me to u :)", "^3^ mweh!", ":*", ";*", "just a quick peck, to be safe- mwa!", "໒(∗ ⇀ 3 ↼ ∗)७", "mwah!"]
-      ThisKiss = random.choice(MessageList)
-      await ctx.send(user + " " + ThisKiss)
-      KissSheet.update_cell(row, 3, kissCount - 1)
-
-    else:
-      await ctx.send("You don't have any kisses to send!")
-  else:
-    await ctx.send("You don't have any kisses to send!")
-
-@bot.command()
-async def kisses(ctx:commands.Context):
-  kissers_list = KissSheet.col_values(2)
-  if str(ctx.author.id) in kissers_list:
-    row = kissers_list.index(str(ctx.author.id)) + 1
-    current = KissSheet.cell(row, 3).value
-    lifetime = KissSheet.cell(row, 4).value
-    kissed = KissSheet.cell(row, 5).value
-    await ctx.send(f'''You have {current} kisses to give!
-You have earned {lifetime} kisses in total!
-You have been kissed {kissed} times!''')
-  else:
-    await ctx.send("You have 0 kisses to give!\nYou have earned 0 kisses in total!\nYou have been kissed 0 times!")
 
 
 bot.run(DISCORD_ACCESS_TOKEN)

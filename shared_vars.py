@@ -1,12 +1,14 @@
+from typing import Mapping
 import discord
 from oauth2client.service_account import ServiceAccountCredentials
 import gspread
 from pydrive2.drive import GoogleDrive
+from CardClasses import Card
 
 from login_with_service_account import login_with_service_account
 
 
-allCards = {}
+allCards:Mapping[str,Card] = {}
 
 intents = discord.Intents.default()
 intents.members = True

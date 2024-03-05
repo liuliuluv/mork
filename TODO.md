@@ -14,7 +14,7 @@
 
 - All of specific cards
 
-- Figure out how to split up the 
+
 - stormstorm images are borked
 
 - LIST out bot requirements, server members, message content

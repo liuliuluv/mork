@@ -22,7 +22,6 @@ async def printCardImages(message):
       await sendImageReply(allCards[post].getImg(), allCards[post].getName(), message)
 
 
-
 async def sendImageReply(url, cardname, message):
   async with aiohttp.ClientSession() as session:
     async with session.get(url) as resp:

@@ -1,8 +1,10 @@
+import asyncio
 from discord import  RawReactionActionEvent
 import discord
 from discord.ext import commands
 from discord.message import Message
 from discord.utils import get
+from CardClasses import Card
 
 import hc_constants
 from is_mork import is_mork
@@ -74,7 +76,7 @@ class LifecycleCog(commands.Cog):
         global allCards # Need to modify shared allCards object
         for i in range(len(nameList)):
             allCards[nameList[i].lower()] = Card(nameList[i], imgList[i], creatorList[i])
-        bot.loop.create_task(status_task())
+        self.bot.loop.create_task(status_task())
         while True:
             await asyncio.sleep(3600)
             with open("log.txt", 'a', encoding='utf8') as file:
@@ -84,7 +86,6 @@ class LifecycleCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self,message:Message):
-
         #debug
         return
         if (message.author == client.user
@@ -92,15 +93,15 @@ class LifecycleCog(commands.Cog):
             or message.author.id in bannedUserIds):
             return
         #if message.channel.id == hc_constants.SUBMISSIONS_CHANNEL and len(message.attachments) > 0:
-        #  await message.add_reaction("👍")
-        #  await message.add_reaction("👎")
+        #  await message.add_reaction(hc_constants.VOTE_UP)
+        #  await message.add_reaction(hc_constants.VOTE_DOWN)
         if message.channel.id == hc_constants.HELLS_UNO_CHANNEL:
-            await message.add_reaction("👍")
-            await message.add_reaction("👎")
+            await message.add_reaction(hc_constants.VOTE_UP)
+            await message.add_reaction(hc_constants.VOTE_DOWN)
         if message.channel.id == hc_constants.VETO_CHANNEL or message.channel.id == hc_constants.EDH_POLLS_CHANNEL:
-            await message.add_reaction("👍")
+            await message.add_reaction(hc_constants.VOTE_UP)
             await message.add_reaction(self.bot.get_emoji(hc_constants.CIRION_SPELLING))
-            await message.add_reaction("👎")
+            await message.add_reaction(hc_constants.VOTE_DOWN)
             await message.add_reaction(self.bot.get_emoji(hc_constants.MANA_GREEN))
             await message.add_reaction(self.bot.get_emoji(hc_constants.MANA_WHITE))
             await message.add_reaction("🤮")
@@ -115,8 +116,8 @@ class LifecycleCog(commands.Cog):
             if "@" in message.content:
                 return
             sentMessage = await message.channel.send(content = message.content)
-            await sentMessage.add_reaction("👍")
-            await sentMessage.add_reaction("👎")
+            await sentMessage.add_reaction(hc_constants.VOTE_UP)
+            await sentMessage.add_reaction(hc_constants.VOTE_DOWN)
             await message.delete()
         if message.channel.id == hc_constants.SUBMISSIONS_CHANNEL and len(message.attachments) > 0:
 
@@ -124,8 +125,8 @@ class LifecycleCog(commands.Cog):
                 return
             file = await message.attachments[0].to_file()
             sentMessage = await message.channel.send(content = message.content + " by " + message.author.mention, file = file)
-            await sentMessage.add_reaction("👍")
-            await sentMessage.add_reaction("👎")
+            await sentMessage.add_reaction(hc_constants.VOTE_UP)
+            await sentMessage.add_reaction(hc_constants.VOTE_DOWN)
             await sentMessage.add_reaction("❌")
             await message.delete()
         if message.channel.id == hc_constants.ZBEAN_ICON_CHANNEL:

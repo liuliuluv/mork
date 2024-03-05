@@ -1,26 +1,21 @@
 import io
 import aiohttp
 import discord
+from discord.utils import get
+from discord.ext import commands
 import asyncio
 import random
 import gspread
 import pprint as pp
-from discord.utils import get
-
-from discord.ext import commands
 from datetime import datetime, timezone, timedelta
-from random import randrange
+
+
+from CardClasses import Side, cardSearch
 from cardNameRequest import cardNameRequest 
 from shared_vars import allCards,intents,googleClient,drive
 import is_mork
-
-from login_with_service_account import login_with_service_account
 from secrets.discord_token import DISCORD_ACCESS_TOKEN
-
-
 import hc_constants
-
-
 
 class MyBot(commands.Bot):
     async def setup_hook(self):
@@ -57,119 +52,16 @@ cardSheet = googleClient.open_by_key(hc_constants.HELLSCUBE_DATABASE).get_worksh
 cardSheetUnapproved = googleClient.open_by_key(hc_constants.HELLSCUBE_DATABASE).get_worksheet(1)
 print(cardSheet)
 
-statusList = ["Haha Gottem in 2020", "Hugh Man in EDH", "the funny dreadmaw card", "Hellscube Victory in Competative", "with old companion rules", "Obama tribal EDH", "irefeT tribal", "Temple of @creator", "cheat big shit out", "v1.0", "2/3 Corpse Knight", "Forbiddenest Ritual for value", "71 lands and Haha Gottem", "PICKLE K'RRIK!", "\"colorless\" card draw", "HellsEdh", "hellscube", "Hellscube Jumpstart", "comboless Zero with Nothing", "with MaRo's feelings", "with Exalted's sanity", "Slot Filler for draw cards equal to 2 minus one", "Epicnessbrian tribal", "a minigame", "a subgame", "a supergame", "The First Pick", "Tendrils of Shahrazad", "hide and seek with Liu Bei's wallet", "with slots", "Redundant Acceleration for 1 card", "with !podcast", "with #brainstorming-shitposts", "with no banlist", "Hatebear With Useful Abilities", "JacobsRedditUsername Tribal", "white card draw!!1!?1!??!?", "Force of Bill for 5 mana", "with bears. So... many... bears...", "Epic Games", "6-mana 1/1s", "a full playset of worm", "all of the murder but _ cycle", "with the idea of skipping to 3.0", "1 cmc super friends", "all the creator lands", "strip hellscube vintage", "cooldownguy vintage", "6-color goodstuff", "a 41 card draft deck", "infinite basics in the sideboard", "10.000 Islands in the main", "#avatar in discord", "Avatar of Discord, Please spam Attack. Please", "Avatar of Discord, Please spam Defence. Please", "Avatar of Discord, Please spam Evasion. Please", "Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing...", "blue bears"]
-
-
-
+statusList = ["Haha Gottem in 2024", "Hugh Man in EDH", "the funny dreadmaw card", "Hellscube Victory in Competative", "with old companion rules", "Obama tribal EDH", "irefeT tribal", "Temple of @creator", "cheat big shit out", "v1.0", "2/3 Corpse Knight", "Forbiddenest Ritual for value", "71 lands and Haha Gottem", "PICKLE K'RRIK!", "\"colorless\" card draw", "HellsEdh", "hellscube", "Hellscube Jumpstart", "comboless Zero with Nothing", "with MaRo's feelings", "with Exalted's sanity", "Slot Filler for draw cards equal to 2 minus one", "Epicnessbrian tribal", "a minigame", "a subgame", "a supergame", "The First Pick", "Tendrils of Shahrazad", "hide and seek with Liu Bei's wallet", "with slots", "Redundant Acceleration for 1 card", "with !podcast", "with #brainstorming-shitposts", "with no banlist", "Hatebear With Useful Abilities", "JacobsRedditUsername Tribal", "white card draw!!1!?1!??!?", "Force of Bill for 5 mana", "with bears. So... many... bears...", "Epic Games", "6-mana 1/1s", "a full playset of worm", "all of the murder but _ cycle", "with the idea of skipping to 3.0", "1 cmc super friends", "all the creator lands", "strip hellscube vintage", "cooldownguy vintage", "6-color goodstuff", "a 41 card draft deck", "infinite basics in the sideboard", "10.000 Islands in the main", "#avatar in discord", "Avatar of Discord, Please spam Attack. Please", "Avatar of Discord, Please spam Defence. Please", "Avatar of Discord, Please spam Evasion. Please", "Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing...", "blue bears"]
 
 global blueRed
 blueRed = False
 
-class Card:
-  def __init__(self, name, img, creator):
-    self._name = name
-    self._img = img
-    self._creator = creator
-  def getName(self):
-    return self._name
-  def getImg(self):
-    return self._img
-  def getCreator(self):
-    return self._creator
-
 cardSheetSearch = googleClient.open("Hellscube Database").worksheet("Database Bot Read")
-
-
 
 cardsDataSearch = cardSheetSearch.col_values(2)
 
-cardList=[]
-
-class Side:
-  def __init__(self, cost, supertypes, types, subtypes, power, toughness, loyalty, text, flavor):
-    self._cost = cost
-    self._supertypes = supertypes
-    self._types = types
-    self._subtypes = subtypes
-    self._power = power
-    self._toughness = toughness
-    self._loyalty = loyalty
-    self._text = text
-    self._flavor = flavor
-  def cost(self):
-    return self._cost
-  def types(self):
-    return self._supertypes + self._types + self._subtypes
-  def power(self):
-    return self._power
-  def toughness(self):
-    return self._toughness
-  def loyalty(self):
-    return self._loyalty
-  def text(self):
-    return self._text
-  def flavor(self):
-    return self._flavor
-
-class cardSearch:
-  def __init__(self, name, img, creator, cmc, colors, sides, cardset, legality, rulings):
-    self._name = name
-    self._img = img
-    self._creator = creator
-    self._cmc = cmc
-    self._colors = colors
-    self._sides = sides
-    self._cardset = cardset
-    self._legality = legality
-    self._rulings = rulings
-  def name(self):
-    return self._name
-  def img(self):
-    return self._img
-  def creator(self):
-    return self._creator
-  def legality(self):
-      return self._legality
-  def rulings(self):
-      return self._rulings
-  def cmc(self):
-    return [self._cmc]
-  def colors(self):
-    return self._colors
-  def cardset(self):
-    return self._cardset
-  def sides(self):
-      return self._sides
-  def types(self):
-    returnList = []
-    for i in self._sides:
-      returnList += i.types()
-    return list(set(returnList))
-  def power(self):
-    returnList = []
-    for i in self._sides:
-      returnList.append(i.power())
-    return list(set(returnList))
-  def toughness(self):
-    returnList = []
-    for i in self._sides:
-      returnList.append(i.toughness())
-    return list(set(returnList))
-  def loyalty(self):
-    returnList = []
-    for i in self._sides:
-      returnList.append(i.loyalty())
-    return list(set(returnList))
-  def text(self):
-    returnString = ""
-    for i in self._sides:
-      returnString += i.text()
-    return returnString
-  def flavor(self):
-    returnString = ""
-    for i in self._sides:
-      returnString += i.flavor()
-    return returnString
+cardList:list[cardSearch]=[]
 
 def genSide(stats):
   cost = stats[0]
@@ -407,48 +299,7 @@ async def search(ctx:commands.Context, *conditions):
   for msg in messages:
     await ctx.send(msg)
 
-async def sendImage(url, cardname, channel):
-  async with aiohttp.ClientSession() as session:
-    async with session.get(url) as resp:
-      if resp.status != 200:
-        await channel.send('Something went wrong while getting the link for ' + cardname + '. Wait for @exalted to fix it.')
-        return
-      data = io.BytesIO(await resp.read())
-      await channel.send(file=discord.File(data, url))
 
-@bot.command()
-async def randomReject(channel, num=0):
-  """
-  Returns a random card image from #submissions.
-  Chooses a random date between the start of submissions and now, then gets history near that date.
-  Chooses a random message from that history. If chosen message has no image, calls itself up to 9 more times.
-  """
-  if num > 9:
-    await channel.send("Sorry, no cards were found.")
-    return
-  subStart = datetime.strptime('5/13/2021 1:30 PM', '%m/%d/%Y %I:%M %p')
-  timeNow = datetime.now(timezone.utc)
-  timeNow = timeNow.replace(tzinfo=None)
-  delta = timeNow - subStart
-  intDelta = (delta.days * 24 * 60 * 60) + delta.seconds
-  randomSecond = randrange(intDelta)
-  randomDate = subStart + timedelta(seconds=randomSecond)
-  subChannel = bot.get_channel(hc_constants.SUBMISSIONS_CHANNEL)
-  subHistory = subChannel.history(around = randomDate)
-  subHistory = [message async for message in subHistory]
-  randomNum = randrange(1, len(subHistory)) - 1
-  if len(subHistory[randomNum].attachments) > 0:
-    file = await subHistory[randomNum].attachments[0].to_file()
-    await channel.send(content = "", file = file)
-  else:
-    num += 1
-    command = bot.get_command("randomReject")
-    await channel.invoke(command, num)
-
-@bot.command(name="random")
-async def randomCard(channel):
-  card = allCards[random.choice(list(allCards.keys()))]
-  await sendImage(card.getImg(), card.getName(), channel)
 
 
 
@@ -467,8 +318,8 @@ async def checkSubmissions():
   for i in range(len(messages)):
     if "@everyone" in messages[i].content:
       continue
-    upvote = get(messages[i].reactions, emoji="👍")
-    downvote = get(messages[i].reactions, emoji="👎")
+    upvote = get(messages[i].reactions, emoji=hc_constants.VOTE_UP)
+    downvote = get(messages[i].reactions, emoji=hc_constants.VOTE_DOWN)
     messageAge = timeNow - messages[i].created_at
     if upvote and downvote:
       upCount = upvote.count
@@ -529,8 +380,8 @@ async def checkErrataSubmissions():
       continue
     if get(messages[i].reactions, emoji="✅"):
       continue
-    upvote = get(messages[i].reactions, emoji="👍")
-    downvote = get(messages[i].reactions, emoji="👎")
+    upvote = get(messages[i].reactions, emoji=hc_constants.VOTE_UP)
+    downvote = get(messages[i].reactions, emoji=hc_constants.VOTE_DOWN)
     messageAge = timeNow - messages[i].created_at
     if upvote and downvote:
       upCount = upvote.count
@@ -557,8 +408,8 @@ async def checkErrataSubmissions():
 #    return
 #  messages = await messages.flatten()
 #  for i in range(len(messages)):
-#      upvote = get(messages[i].reactions, emoji="👍")
-#      downvote = get(messages[i].reactions, emoji="👎")
+#      upvote = get(messages[i].reactions, emoji=hc_constants.VOTE_UP)
+#      downvote = get(messages[i].reactions, emoji=hc_constants.VOTE_DOWN)
 #      if len(messages[i].attachments) > 0 and is_mork(messages[i].author.id):
 #        file = await messages[i].attachments[0].to_file()
 #        copy = await messages[i].attachments[0].to_file()
@@ -585,8 +436,8 @@ async def checkErrataSubmissions():
 #     mork = bot.get_user(538770459517255711)
 #     file = await message.attachments[0].to_file()
 #     sentMessage = await subchannel.send(content=message.content + " by " + mork.mention, file=file)
-#     await sentMessage.add_reaction("👍")
-#     await sentMessage.add_reaction("👎")
+#     await sentMessage.add_reaction(hc_constants.VOTE_UP)
+#     await sentMessage.add_reaction(hc_constants.VOTE_DOWN)
 #     await sentMessage.add_reaction("❌")
 
 ##@bot.command()
@@ -596,8 +447,8 @@ async def checkErrataSubmissions():
 ##   mork = bot.get_user(hc_constants.MORK)
 ##   file = await message.attachments[0].to_file()
 ##   sentMessage = await subchannel.send(content=message.content + " by " + mork.mention, file=file)
-##   await sentMessage.add_reaction("👍")
-##   await sentMessage.add_reaction("👎")
+##   await sentMessage.add_reaction(hc_constants.VOTE_UP)
+##   await sentMessage.add_reaction(hc_constants.VOTE_DOWN)
 ##   await sentMessage.add_reaction("❌")
 
 log = ""
@@ -929,11 +780,11 @@ async def compileveto(ctx:commands.Context):
     vetoHell = []
     for i in range(len(messages)):
       try:
-        upvote = get(messages[i].reactions, emoji="👍").count
+        upvote = get(messages[i].reactions, emoji=hc_constants.VOTE_UP).count
       except:
         upvote = -1
       try:
-        downvote = get(messages[i].reactions, emoji="👎").count
+        downvote = get(messages[i].reactions, emoji=hc_constants.VOTE_DOWN).count
       except:
         downvote = -1
       try:
@@ -963,7 +814,7 @@ async def compileveto(ctx:commands.Context):
         await messages[i].add_reaction("✅")
         thread = messages[i].guild.get_channel_or_thread(messages[i].id)
         await thread.edit(archived = True)
-        file = await messages[i].attachments[0].to_file()
+        file = await messages[i].attachments[0].to_file() # lol okay here's the other weird file and copy
         copy = await messages[i].attachments[0].to_file()
         acceptanceMessage = messages[i].content
         if (len(acceptanceMessage)) == 0:
@@ -1050,8 +901,6 @@ async def compileveto(ctx:commands.Context):
 
   else:
     await ctx.send("Veto Council Only")
-
-
 
 
 bot.run(DISCORD_ACCESS_TOKEN)

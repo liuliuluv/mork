@@ -1,5 +1,5 @@
 
-I have no idea what is going on, I think Exalted and Zaxer built this.
+I have no idea what is going on, I think Exalted built this. (and Zaxer too?)
 
 
 # Setup
@@ -11,8 +11,6 @@ I have no idea what is going on, I think Exalted and Zaxer built this.
 1. Ask someone to add the both to the server and give it the bot role too
 
 
-
-
 # To get it to work
 to get a copy to work you'd have to do a few things
 - Make a new Discord application on the dev portal and invite it to the server. Replace the token in the code with the new token.
@@ -22,5 +20,5 @@ to get a copy to work you'd have to do a few things
 
 
 
-
-
+# Concepts
+Uh go read about discord cogs, just write your feature-specific code in one of those, then reference it in Mork.

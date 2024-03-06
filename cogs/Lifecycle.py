@@ -9,7 +9,8 @@ from CardClasses import Card
 import hc_constants
 from is_mork import is_mork
 from printCardImages import printCardImages
-from shared_vars import intents
+from shared_vars import intents,cardSheet,allCards
+
 
 
 client = discord.Client(intents=intents)
@@ -68,14 +69,15 @@ class LifecycleCog(commands.Cog):
     async def on_ready(self):
         global log
         print(f'{self.bot.user.name} has connected to Discord!')
-        # debug 
-        return
+     
         nameList = cardSheet.col_values(1)[3:]
         imgList = cardSheet.col_values(2)[3:]
         creatorList = cardSheet.col_values(3)[3:]
         global allCards # Need to modify shared allCards object
         for i in range(len(nameList)):
             allCards[nameList[i].lower()] = Card(nameList[i], imgList[i], creatorList[i])
+        # debug 
+        return
         self.bot.loop.create_task(status_task())
         while True:
             await asyncio.sleep(3600)

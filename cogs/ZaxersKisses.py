@@ -15,7 +15,7 @@ class ZaxersKissesCog(commands.Cog):
         self.bot = bot
         
     @commands.command(aliases=['awardkisses'])
-    async def awardkiss(ctx:commands.Context, user, number = 1):
+    async def awardkiss(self,ctx:commands.Context, user, number = 1):
         moderators_list = KissSheet.col_values(1)
         print(ctx.author.id)
         print(moderators_list)
@@ -43,7 +43,7 @@ class ZaxersKissesCog(commands.Cog):
             await ctx.send("Only verified kiss arbiters can award kisses! Talk to Zaxer to inquire about becoming a verified kiss arbiter.")
 
     @commands.command()
-    async def kiss(ctx:commands.Context, user):
+    async def kiss(self,ctx:commands.Context, user):
         kissers_list = KissSheet.col_values(2)
         if str(ctx.author.id) in kissers_list:
             row = kissers_list.index(str(ctx.author.id)) + 1
@@ -76,7 +76,7 @@ class ZaxersKissesCog(commands.Cog):
             await ctx.send("You don't have any kisses to send!")
 
     @commands.command()
-    async def kisses(ctx:commands.Context):
+    async def kisses(self,ctx:commands.Context):
         kissers_list = KissSheet.col_values(2)
         if str(ctx.author.id) in kissers_list:
             row = kissers_list.index(str(ctx.author.id)) + 1
@@ -87,7 +87,6 @@ class ZaxersKissesCog(commands.Cog):
         else:
             await ctx.send("You have 0 kisses to give!\nYou have earned 0 kisses in total!\nYou have been kissed 0 times!") 
 
-  
 
 async def setup(bot:commands.Bot):
     await bot.add_cog(ZaxersKissesCog(bot))

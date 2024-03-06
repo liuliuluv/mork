@@ -14,7 +14,7 @@ def login_with_service_account():
     settings = {
                 "client_config_backend": "service",
                 "service_config": {
-                    "client_json_file_path": "./secrets/client_secrets.json",
+                    "client_json_file_path": "secrets/client_secrets.json",
                 }
             }
     # Create instance of GoogleAuth

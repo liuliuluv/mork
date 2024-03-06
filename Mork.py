@@ -26,7 +26,8 @@ class MyBot(commands.Bot):
           'cogs.Roles',
           'cogs.Lifecycle',
           'cogs.ZaxersKisses',
-          'cogs.Quotes'
+          'cogs.Quotes',
+          'cogs.HellscubeDatabase'
           ]
         for i in initialExtensions:
             await self.load_extension(i)
@@ -48,9 +49,8 @@ async def check_cogs(ctx:commands.Context, cog_name):
         await bot.unload_extension(f"cogs.{cog_name}")
 
 
-cardSheet = googleClient.open_by_key(hc_constants.HELLSCUBE_DATABASE).get_worksheet(0)
 cardSheetUnapproved = googleClient.open_by_key(hc_constants.HELLSCUBE_DATABASE).get_worksheet(1)
-print(cardSheet)
+
 
 statusList = ["Haha Gottem in 2024", "Hugh Man in EDH", "the funny dreadmaw card", "Hellscube Victory in Competative", "with old companion rules", "Obama tribal EDH", "irefeT tribal", "Temple of @creator", "cheat big shit out", "v1.0", "2/3 Corpse Knight", "Forbiddenest Ritual for value", "71 lands and Haha Gottem", "PICKLE K'RRIK!", "\"colorless\" card draw", "HellsEdh", "hellscube", "Hellscube Jumpstart", "comboless Zero with Nothing", "with MaRo's feelings", "with Exalted's sanity", "Slot Filler for draw cards equal to 2 minus one", "Epicnessbrian tribal", "a minigame", "a subgame", "a supergame", "The First Pick", "Tendrils of Shahrazad", "hide and seek with Liu Bei's wallet", "with slots", "Redundant Acceleration for 1 card", "with !podcast", "with #brainstorming-shitposts", "with no banlist", "Hatebear With Useful Abilities", "JacobsRedditUsername Tribal", "white card draw!!1!?1!??!?", "Force of Bill for 5 mana", "with bears. So... many... bears...", "Epic Games", "6-mana 1/1s", "a full playset of worm", "all of the murder but _ cycle", "with the idea of skipping to 3.0", "1 cmc super friends", "all the creator lands", "strip hellscube vintage", "cooldownguy vintage", "6-color goodstuff", "a 41 card draft deck", "infinite basics in the sideboard", "10.000 Islands in the main", "#avatar in discord", "Avatar of Discord, Please spam Attack. Please", "Avatar of Discord, Please spam Defence. Please", "Avatar of Discord, Please spam Evasion. Please", "Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing...", "blue bears"]
 
@@ -874,8 +874,7 @@ async def compileveto(ctx:commands.Context):
         role = get(messages[i].guild.roles, id=int(798689768379908106))
         await thread.send(role.mention)
         vetoHell.append(messages[i])
-##        await messages[i].add_reaction("❗")
-##        await messages[i].add_reaction("❌")
+
 
     announcement = [""]
     annIndex = 0

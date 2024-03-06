@@ -3,9 +3,12 @@ import discord
 from oauth2client.service_account import ServiceAccountCredentials
 import gspread
 from pydrive2.drive import GoogleDrive
+from pydrive2.auth import GoogleAuth
 from CardClasses import Card
+import hc_constants
 
-from login_with_service_account import login_with_service_account
+
+# from login_with_service_account import login_with_service_account
 
 
 allCards:Mapping[str,Card] = {}
@@ -16,8 +19,11 @@ intents.messages = True
 intents.message_content = True
 intents.guilds = True
 
-gauth = login_with_service_account()
-drive = GoogleDrive(gauth)
+# gauth = login_with_service_account()
+# drive = GoogleDrive(gauth)
+
+#https://drive.usercontent.google.com/download?id=1rlTZziiDy8q4wjwp1BGFZTGFHX5lLSOZ
+
 
 scope = [
     "https://spreadsheets.google.com/feeds",
@@ -25,6 +31,19 @@ scope = [
     "https://www.googleapis.com/auth/drive.file",
     "https://www.googleapis.com/auth/drive"]
 
+
+gauth = GoogleAuth()
+gauth.auth_method = 'service'
 creds = ServiceAccountCredentials.from_json_keyfile_name("secrets/client_secrets.json", scope)
+gauth.credentials=creds
+drive = GoogleDrive(gauth)
+about = drive.GetAbout()
 
 googleClient = gspread.authorize(creds)
+
+
+cardSheet = googleClient.open_by_key(hc_constants.HELLSCUBE_DATABASE).get_worksheet(0)
+print(cardSheet)
+
+
+#https://lh3.googleusercontent.com/d/1IZl1kGl0ajV4I7UY5DbQSL2yaF_i_uka

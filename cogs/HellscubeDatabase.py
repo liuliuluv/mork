@@ -50,7 +50,8 @@ class HellscubeDatabaseCog(commands.Cog):
             await channel.invoke(command, num)
 
     @commands.command(name="random")
-    async def randomCard(channel):
+    async def randomCard(self,channel):
+        print(allCards)
         card = allCards[random.choice(list(allCards.keys()))]
         await sendImage(card.getImg(), card.getName(), channel)
 

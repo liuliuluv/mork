@@ -8,9 +8,6 @@ from CardClasses import Card
 import hc_constants
 
 
-# from login_with_service_account import login_with_service_account
-
-
 allCards:Mapping[str,Card] = {}
 
 intents = discord.Intents.default()
@@ -19,10 +16,7 @@ intents.messages = True
 intents.message_content = True
 intents.guilds = True
 
-# gauth = login_with_service_account()
-# drive = GoogleDrive(gauth)
 
-#https://drive.usercontent.google.com/download?id=1rlTZziiDy8q4wjwp1BGFZTGFHX5lLSOZ
 
 
 scope = [

@@ -4,7 +4,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 import gspread
 from pydrive2.drive import GoogleDrive
 from pydrive2.auth import GoogleAuth
-from CardClasses import Card
+from CardClasses import Card, cardSearch
 import hc_constants
 
 
@@ -16,6 +16,8 @@ intents.messages = True
 intents.message_content = True
 intents.guilds = True
 
+
+cardList:list[cardSearch]=[]
 
 
 

@@ -11,6 +11,7 @@ from is_mork import is_mork
 from printCardImages import printCardImages
 from shared_vars import intents,cardSheet,allCards
 
+ONE_HOUR = 3600
 
 
 client = discord.Client(intents=intents)
@@ -80,7 +81,7 @@ class LifecycleCog(commands.Cog):
         return
         self.bot.loop.create_task(status_task())
         while True:
-            await asyncio.sleep(3600)
+            await asyncio.sleep(ONE_HOUR)
             with open("log.txt", 'a', encoding='utf8') as file:
                 file.write(log)
                 log = ""
@@ -122,7 +123,6 @@ class LifecycleCog(commands.Cog):
             await sentMessage.add_reaction(hc_constants.VOTE_DOWN)
             await message.delete()
         if message.channel.id == hc_constants.SUBMISSIONS_CHANNEL and len(message.attachments) > 0:
-
             if "@" in message.content:
                 return
             file = await message.attachments[0].to_file()

@@ -8,10 +8,9 @@ import gspread
 import pprint as pp
 from datetime import datetime, timezone, timedelta
 
-# todo: test this
-global cardList
-from CardClasses import Side, cardSearch
-from shared_vars import cardList,intents,googleClient,drive
+
+
+from shared_vars import intents,googleClient,drive
 import is_mork
 from secrets.discord_token import DISCORD_ACCESS_TOKEN
 import hc_constants
@@ -23,7 +22,7 @@ class MyBot(commands.Bot):
         print('This is asynchronous!')
         initialExtensions = [
           'cogs.SpecificCards',
-          'cogs.Messages',
+        #  'cogs.Messages',
           'cogs.Roles',
           'cogs.Lifecycle',
           'cogs.ZaxersKisses',
@@ -57,71 +56,6 @@ statusList = ["Haha Gottem in 2024", "Hugh Man in EDH", "the funny dreadmaw card
 
 global blueRed
 blueRed = False
-
-cardSheetSearch = googleClient.open("Hellscube Database").worksheet("Database Bot Read")
-
-cardsDataSearch = cardSheetSearch.col_values(2)
-
-
-
-def genSide(stats):
-  cost = stats[0]
-  if stats[1] != "":
-    supertypes = stats[1].split(";")
-  else:
-    supertypes = []
-  types = stats[2].split(";")
-  if stats[3] != "":
-    subtypes = stats[3].split(";")
-  else:
-    subtypes = []
-  power = 0
-  toughness = 0
-  loyalty = 0
-  if stats[4] != "" and stats[4] != " ":
-    power = int(stats[4])
-  if stats[5] != "" and stats[5] != " ":
-    toughness = int(stats[5])
-  if stats[6] != "" and stats[6] != " ":
-    loyalty = int(stats[6])
-  text = stats[7]
-  flavor = stats[8]
-  return Side(cost, supertypes, types, subtypes, power, toughness, loyalty, text, flavor)
-
-
-for i in cardsDataSearch:
-  try:
-    if i == "%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%":
-      break
-    stats = i.lower().split("%&%&%")
-    name = stats[0]
-    img = stats[1]
-    creator = stats[2]
-    cmc = 0
-    cardset = stats[3]
-    legality = stats[4]
-    rulings = stats[5]
-    if stats[6] != "" and stats[6] != " ":
-      cmc = int(stats[6])
-    if stats[7] == "colorless":
-      stats[7] = ""
-    colors = stats[7].split(";")
-    sides = []
-    sides.append(genSide(stats[8:]))
-    if stats[20] != "" and stats[20] != " ":
-      sides.append(genSide(stats[18:]))
-    if stats[29] != "" and stats[29] != " ":
-      sides.append(genSide(stats[27:]))
-    if stats[38] != "" and stats[38] != " ":
-      sides.append(genSide(stats[36:]))
-    cardList.append(cardSearch(name, img, creator, cmc, colors, sides, cardset, legality, rulings))
-  except:
-    print(i)
-    print(i.lower().split("%&%&%"))
-
-
-
-
 
 async def checkSubmissions():
   subChannel = bot.get_channel(hc_constants.SUBMISSIONS_CHANNEL)
@@ -175,7 +109,7 @@ async def checkSubmissions():
         file = await messages[i].attachments[0].to_file()
         copy = await messages[i].attachments[0].to_file()
         copy2 = await messages[i].attachments[0].to_file()
-        acceptContent = messages[i].content + " was accepted " + messages[i].author.mention
+        acceptContent = f'{messages[i].content} was accepted {messages[i].author.mention}'
         vetoContent = messages[i].content + " by " + messages[i].author.name
         logContent = acceptContent + ", message id: " + str(messages[i].id) + ", upvotes: " + str(upCount) + ", downvotes: " + str(downCount)
         await acceptedChannel.send(content=acceptContent)
@@ -189,7 +123,7 @@ async def checkErrataSubmissions():
   subChannel = bot.get_channel(hc_constants.FOUR_ZERO_ERRATA_SUBMISSIONS_CHANNEL)
   acceptedChannel = bot.get_channel(hc_constants.FOUR_ZERO_ERRATA_ACCEPTED_CHANNEL)
   timeNow = datetime.now(timezone.utc)
-##  timeNow = timeNow.replace(tzinfo=None)
+  ##  timeNow = timeNow.replace(tzinfo=None)
   oneWeek = timeNow + timedelta(weeks=-1)
   messages = subChannel.history(after=oneWeek, limit=None)
   if messages is None:
@@ -212,64 +146,6 @@ async def checkErrataSubmissions():
         await messages[i].add_reaction("✅")
   print("------done checking errata submissions-----")
 
-# not sure what all of this next stuff is
-  
-# @bot.command()
-# async def checkSubTest(ctx):
-#  subChannel = bot.get_channel(1005628044075090041)
-#  vetoChannel = bot.get_channel(1005628663968059492)
-#  acceptedChannel = bot.get_channel(1005628663968059492)
-#  logChannel = bot.get_channel(hc_constants.MORK_SUBMISSIONS_LOGGING_CHANNEL)
-#  timeNow = datetime.now(timezone.utc)
-#  timeNow = timeNow.replace(tzinfo=None)
-#  oneWeek = timeNow + timedelta(weeks=-1)
-#  messages = subChannel.history(after=oneWeek, limit=None)
-#  if messages is None:
-#    return
-#  messages = await messages.flatten()
-#  for i in range(len(messages)):
-#      upvote = get(messages[i].reactions, emoji=hc_constants.VOTE_UP)
-#      downvote = get(messages[i].reactions, emoji=hc_constants.VOTE_DOWN)
-#      if len(messages[i].attachments) > 0 and is_mork(messages[i].author.id):
-#        file = await messages[i].attachments[0].to_file()
-#        copy = await messages[i].attachments[0].to_file()
-#        copy2 = await messages[i].attachments[0].to_file()
-#        acceptContent = messages[i].content + " was accepted "
-#        mention = "<@" + str(messages[i].raw_mentions[0]) + ">"
-#        nickMention = "<@!" + str(messages[i].raw_mentions[0]) + ">"
-#        removeMention = messages[i].content.replace(mention, "")
-#        removeMention = removeMention.replace(nickMention, "")
-#        vetoContent = removeMention + messages[i].mentions[0].name
-#        logContent = acceptContent + ", message id: " + str(messages[i].id) + ", upvotes: " + str(upvote.count) + ", downvotes: " + str(downvote.count)
-#        await acceptedChannel.send(content=acceptContent)
-#        await acceptedChannel.send(content="", file=file)
-#        await vetoChannel.send(content=vetoContent, file=copy)
-#        await logChannel.send(content=logContent, file=copy2)
-#        await messages[i].delete()
-
-# @tasks.loop(hours=4, count=2)
-# async def my_task():
-#   print("doing task")
-#   if my_task.current_loop != 0:
-#     subchannel = bot.get_channel(hc_constants.SUBMISSIONS_CHANNEL)
-#     message = await subchannel.fetch_message(1091591370956865577)
-#     mork = bot.get_user(538770459517255711)
-#     file = await message.attachments[0].to_file()
-#     sentMessage = await subchannel.send(content=message.content + " by " + mork.mention, file=file)
-#     await sentMessage.add_reaction(hc_constants.VOTE_UP)
-#     await sentMessage.add_reaction(hc_constants.VOTE_DOWN)
-#     await sentMessage.add_reaction("❌")
-
-##@bot.command()
-##async def morkPost(ctx, messageID):
-##   message = await ctx.fetch_message(messageID)
-##   subchannel = bot.get_channel(hc_constants.SUBMISSIONS_CHANNEL)
-##   mork = bot.get_user(hc_constants.MORK)
-##   file = await message.attachments[0].to_file()
-##   sentMessage = await subchannel.send(content=message.content + " by " + mork.mention, file=file)
-##   await sentMessage.add_reaction(hc_constants.VOTE_UP)
-##   await sentMessage.add_reaction(hc_constants.VOTE_DOWN)
-##   await sentMessage.add_reaction("❌")
 
 log = ""
 

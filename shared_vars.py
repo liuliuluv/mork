@@ -17,7 +17,6 @@ intents.message_content = True
 intents.guilds = True
 
 
-cardList:list[cardSearch]=[]
 
 
 

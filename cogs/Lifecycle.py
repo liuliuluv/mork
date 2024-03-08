@@ -21,11 +21,6 @@ class LifecycleCog(commands.Cog):
     def __init__(self, bot:commands.Bot):
         self.bot = bot
 
-    # @commands.Cog.listener()
-    # async def on_message(self, message:Message):
-    #     print(message.channel.id)
-    #     if message.channel.id == hc_constants.BOT_TEST_CHANNEL:
-    #         print(message)
         
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self,payload:RawReactionActionEvent):
@@ -124,7 +119,7 @@ class LifecycleCog(commands.Cog):
             await message.delete()
         if message.channel.id == hc_constants.SUBMISSIONS_CHANNEL and len(message.attachments) > 0:
             if "@" in message.content:
-                return
+                return # I'm confused what this case is, it might be the non-bot case, but who knows
             file = await message.attachments[0].to_file()
             sentMessage = await message.channel.send(content = message.content + " by " + message.author.mention, file = file)
             await sentMessage.add_reaction(hc_constants.VOTE_UP)

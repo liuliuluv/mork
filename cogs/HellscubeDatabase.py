@@ -4,15 +4,79 @@ from discord.ext import commands
 from random import randrange
 
 from datetime import datetime, timezone, timedelta
+from CardClasses import Side, cardSearch
 from cardNameRequest import cardNameRequest
 import hc_constants
 from sendImage import sendImage
 
 
-from shared_vars import intents,allCards,cardList
+from shared_vars import intents,allCards,googleClient
+
+cardList:list[cardSearch]=[]
+
+cardSheetSearch = googleClient.open("Hellscube Database").worksheet("Database Bot Read")
+
+cardsDataSearch = cardSheetSearch.col_values(2)
 
 client = discord.Client(intents=intents)
 
+
+def genSide(stats):
+  cost = stats[0]
+  if stats[1] != "":
+    supertypes = stats[1].split(";")
+  else:
+    supertypes = []
+  types = stats[2].split(";")
+  if stats[3] != "":
+    subtypes = stats[3].split(";")
+  else:
+    subtypes = []
+  power = 0
+  toughness = 0
+  loyalty = 0
+  if stats[4] != "" and stats[4] != " ":
+    power = int(stats[4])
+  if stats[5] != "" and stats[5] != " ":
+    toughness = int(stats[5])
+  if stats[6] != "" and stats[6] != " ":
+    loyalty = int(stats[6])
+  text = stats[7]
+  flavor = stats[8]
+  return Side(cost, supertypes, types, subtypes, power, toughness, loyalty, text, flavor)
+
+
+
+
+for i in cardsDataSearch:
+  try:
+    if i == "%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%%&%&%":
+      break
+    stats = i.lower().split("%&%&%")
+    name = stats[0]
+    img = stats[1]
+    creator = stats[2]
+    cmc = 0
+    cardset = stats[3]
+    legality = stats[4]
+    rulings = stats[5]
+    if stats[6] != "" and stats[6] != " ":
+      cmc = int(stats[6])
+    if stats[7] == "colorless":
+      stats[7] = ""
+    colors = stats[7].split(";")
+    sides = []
+    sides.append(genSide(stats[8:]))
+    if stats[20] != "" and stats[20] != " ":
+      sides.append(genSide(stats[18:]))
+    if stats[29] != "" and stats[29] != " ":
+      sides.append(genSide(stats[27:]))
+    if stats[38] != "" and stats[38] != " ":
+      sides.append(genSide(stats[36:]))
+    cardList.append(cardSearch(name, img, creator, cmc, colors, sides, cardset, legality, rulings))
+  except:
+    print(i)
+    print(i.lower().split("%&%&%"))
 
 
 class HellscubeDatabaseCog(commands.Cog):
@@ -290,5 +354,6 @@ def printCardNames(cards):
   for i in cards:
     returnString += i.name() + "\n"
   return returnString
+
 
 

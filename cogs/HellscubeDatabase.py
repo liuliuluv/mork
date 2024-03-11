@@ -152,7 +152,7 @@ class HellscubeDatabaseCog(commands.Cog):
                 legality = card.legality()
                 rulings = card.rulings()
                 rulingsList = rulings.split("\\\\\\")
-                message = name + "\ncreator: " + creator + "\nset: " + cardset + "\nlegality: " + legality + "\nrulings: "
+                message =  f"{name}\ncreator: {creator}\nset: {cardset}\nlegality: {legality}\nrulings: "
                 for i in rulingsList:
                     message = message + "\n```" + i + "```"
         await channel.send(message)
@@ -228,8 +228,8 @@ class HellscubeDatabaseCog(commands.Cog):
             return
         
         matchingCards = searchFor(restrictions)
-        if matchingCards.__len__ > 100:
-           await ctx.send(f"There were {matchingCards.__len__} results you fucking moron.")
+        if matchingCards.__len__() > 100:
+           await ctx.send(f"There were {matchingCards.__len__()} results you fucking moron. Go use hellfall or something.")
            return
         message = printCardNames(matchingCards)
         if message == "":
@@ -280,18 +280,18 @@ def checkForInt(condition, data):
   for i in condition:
     if i[0] != None:
       number = int(i[0])
-      opperator = i[1]
-      if opperator == "=":
+      operator = i[1]
+      if operator == "=":
         if not number in data:
           return False
-      if opperator == ">":
+      if operator == ">":
         works = False
         for j in data:
           if j > number:
             works = True
         if not works:
           return False
-      if opperator == "<":
+      if operator == "<":
         works = False
         for j in data:
           if j < number:

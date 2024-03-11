@@ -347,7 +347,7 @@ async def help(ctx:commands.Context):
 #      await messages[i].remove_reaction(hc_constants.ACCEPT, bot.get_user(hc_constants.MORK))
 #    await ctx.send("removed all my recent ✅ from #veto-polls")
 
-def vetoAnnouncementHelper(cardArray:list, announcement:list[str], annIndex:int):
+def vetoAnnouncementHelper(cardArray:list[discord.Message], announcement:list[str], annIndex:int):
   for i in cardArray:
     thisLine = i.content
     if len(announcement[annIndex]) + len(thisLine) > 1950:
@@ -382,10 +382,10 @@ async def compileveto(ctx:commands.Context):
     if messages is None:
       return
     messages = [message async for message in messages]
-    acceptedCards = []
-    errataedCards = []
-    vetoedCards = []
-    vetoHell = []
+    acceptedCards:list[discord.Message] = []
+    errataedCards:list[discord.Message] = []
+    vetoedCards:list[discord.Message] = []
+    vetoHell:list[discord.Message] = []
     for messageEntry in messages:
       try:
         upvote = get(messageEntry.reactions, emoji=hc_constants.VOTE_UP).count
@@ -396,13 +396,16 @@ async def compileveto(ctx:commands.Context):
       except:
         downvote = -1
       try:
-        errata = get(messageEntry.reactions, emoji=bot.get_emoji(hc_constants.CIRION_SPELLING)).count
+        errata = get(messageEntry.reactions, emoji=hc_constants.CIRION_SPELLING).count
       except:
         errata = -1
       if (len(messageEntry.attachments) == 0):
         continue
       messageAge = timeNow - messageEntry.created_at
-      if get(messageEntry.reactions, emoji=hc_constants.ACCEPT) or get(messageEntry.reactions, emoji=hc_constants.DENY):
+
+      # at this point we assume that everything is good
+
+      if get(messageEntry.reactions, emoji = hc_constants.ACCEPT) or get(messageEntry.reactions, emoji = hc_constants.DENY):
         continue
       elif (messageAge < timedelta(days=1)):
         ... # No idea why this case was here...
@@ -422,10 +425,11 @@ async def compileveto(ctx:commands.Context):
             and upvote >= errata):
         acceptedCards.append(messageEntry)
         await messageEntry.add_reaction(hc_constants.ACCEPT)
-        thread =messageEntry.guild.get_channel_or_thread(messageEntry.id)
+        thread = messageEntry.guild.get_channel_or_thread(messageEntry.id)
         await thread.edit(archived = True)
         file = await messageEntry.attachments[0].to_file() # lol okay here's the other weird file and copy
         copy = await messageEntry.attachments[0].to_file()
+        
         acceptanceMessage = messageEntry.content
         dbname = ""
         dbauthor = ""
@@ -449,42 +453,45 @@ async def compileveto(ctx:commands.Context):
         except:
           ...
 
-        dburl = sentMessage.attachments[0].url
+        # here is where we'll need to upload the file to google
+        imageUrl = sentMessage.attachments[0].url
         allCardNames = cardSheetUnapproved.col_values(1)
         newCard = True
         if dbname in allCardNames and dbname != "":
-          dbrow = allCardNames.index(dbname) + 1
+          dbRowIndex = allCardNames.index(dbname) + 1
           newCard = False
         else:
-          dbrow = len(allCardNames) + 1
+          dbRowIndex = len(allCardNames) + 1
           if dbname == "":
             dbname = "NO NAME"
-        cardSheetUnapproved.update_cell(dbrow, 4, dburl)
+        cardSheetUnapproved.update_cell(dbRowIndex, 4, imageUrl)
         if newCard:
-          cardSheetUnapproved.update_cell(dbrow, 1, dbname)
-          cardSheetUnapproved.update_cell(dbrow, 6, dbauthor)
-          boldRangesA1 = [gspread.utils.rowcol_to_a1(dbrow, 1), gspread.utils.rowcol_to_a1(dbrow, 4), gspread.utils.rowcol_to_a1(dbrow, 6)]
+          # If adding a new card, bold that row
+          cardSheetUnapproved.update_cell(dbRowIndex, 1, dbname)
+          cardSheetUnapproved.update_cell(dbRowIndex, 6, dbauthor)
+          boldRangesA1 = [gspread.utils.rowcol_to_a1(dbRowIndex, 1), gspread.utils.rowcol_to_a1(dbRowIndex, 4), gspread.utils.rowcol_to_a1(dbRowIndex, 6)]
           cardSheetUnapproved.format(boldRangesA1, {'textFormat': {'bold': True}})
         else:
-          cardSheetUnapproved.format(gspread.utils.rowcol_to_a1(dbrow, 4), {'textFormat': {'bold': True}})
+          # If editing a card, italic it (see if we can just change this to bold. there's not that meaningful of a difference... i think)
+          cardSheetUnapproved.format(gspread.utils.rowcol_to_a1(dbRowIndex, 4), {'textFormat': {'bold': True}})
           italicsRangesA1 = []
-          thisRow = cardSheetUnapproved.row_values(dbrow)
+          thisRow = cardSheetUnapproved.row_values(dbRowIndex)
           print(thisRow)
           for i in range(len(thisRow)):
             if thisRow[i] != "" and i != 0 and i != 3 and i != 5:
-              italicsRangesA1.append(gspread.utils.rowcol_to_a1(dbrow, i + 1))
+              italicsRangesA1.append(gspread.utils.rowcol_to_a1(dbRowIndex, i + 1))
           if italicsRangesA1 != []:
             cardSheetUnapproved.format(italicsRangesA1, {'textFormat': {'italic': True}})
 
       # Veto case
       elif (downvote > 4 and downvote >= upvote and downvote >= errata):
         vetoedCards.append(messageEntry)
-        await messageEntry.add_reaction(hc_constants.ACCEPT) # wait what
+        await messageEntry.add_reaction(hc_constants.ACCEPT) # see ./README.md
 
       # Veto Hell
       elif (messageAge > timedelta(days=3)):
         thread = messageEntry.guild.get_channel_or_thread(messageEntry.id)
-        role = get(messageEntry.guild.roles, id=int(798689768379908106))
+        role = get(messageEntry.guild.roles, id=hc_constants.VETO_COUNCIL_MAYBE)
         await thread.send(role.mention)
         vetoHell.append(messageEntry)
 

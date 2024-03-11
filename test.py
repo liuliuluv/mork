@@ -12,6 +12,9 @@ from shared_vars import drive,googleClient
 nammappings=[]
 
 
+print([].__len__())
+
+
 
 # loop = asyncio.new_event_loop()
 # asyncio.set_event_loop(loop)

@@ -110,7 +110,7 @@ class LifecycleCog(commands.Cog):
             await message.add_reaction("🤮")
             await message.add_reaction("🤔")
             thread = await message.create_thread(name=message.content)
-            role = get(message.author.guild.roles, id=int(798689768379908106))
+            role = get(message.author.guild.roles, id==hc_constants.VETO_COUNCIL_MAYBE)
             await thread.send(role.mention)
         ##    for user in role.members:
         ##        await thread.add_user(user)

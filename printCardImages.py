@@ -2,7 +2,6 @@ import io
 import re
 import aiohttp
 import discord
-from multidict import CIMultiDict
 from cardNameRequest import cardNameRequest
 import hc_constants
 from shared_vars import allCards
@@ -26,7 +25,7 @@ async def printCardImages(message:Message):
       await sendImageReply(allCards[post].getImg(), allCards[post].getName(), message)
 
 
-async def sendImageReply(url, cardname, message:Message):
+async def sendImageReply(url, cardname:str, message:Message):
   async with aiohttp.ClientSession() as session:
     async with session.get(url) as resp:
       if resp.status != 200:

@@ -31,14 +31,14 @@ class QuotesCog(commands.Cog):
         if message.author.id == hc_constants.TIME_SPIRAL and ctx.channel.id != hc_constants.CUBE_CHANNEL:
             await ctx.send("The bot can't quote itself")
             return
-        fileID = getFileForChannelId(ctx.channel.id)
+        fileID = hc_constants.QUOTES_FILE
 
         await addToDrive(message.content, user, fileID)
         await ctx.send("\"" + message.content + "\"\n-" + user)
 
     @commands.command()
     async def randomquote(ctx:commands.Context, *user):
-        fileID = getFileForChannelId(ctx.channel.id)
+        fileID = hc_constants.QUOTES_FILE
         file = drive.CreateFile({'id':fileID})
         quoteList = file.GetContentString().split(QUOTE_SPLIT)
         for i in range(len(quoteList)):
@@ -60,7 +60,7 @@ class QuotesCog(commands.Cog):
 
     @commands.command()
     async def searchquote(ctx:commands.Context, text, *user):
-        fileID = getFileForChannelId(ctx.channel.id)
+        fileID = hc_constants.QUOTES_FILE
         file = drive.CreateFile({'id':fileID})
         quoteList = file.GetContentString().split(QUOTE_SPLIT)
         for i in range(len(quoteList)):
@@ -110,14 +110,7 @@ async def addToDrive(message, user, fileID):
   file.SetContentString(update)
   file.Upload()
 
-def getFileForChannelId(channelId):
-  return  "1EdaLJl9Rs0RuigiivckOM1obPmQ99hMg"
-
-
-
-
 async def createQuoteMenu(ctx:commands.Context, quoteList):
-
   pageList = []
   for i in quoteList:
     page = discord.Embed(title=i[1], description=i[0])

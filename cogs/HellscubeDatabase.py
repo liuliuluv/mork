@@ -160,7 +160,7 @@ class HellscubeDatabaseCog(commands.Cog):
 
 
     @commands.command()
-    async def search(self, ctx:commands.Context, *conditions):
+    async def search(self, ctx:commands.Context, *conditions:str):
         restrictions = {}
         for i in conditions:
             if i.lower()[0:2] == "o:":
@@ -228,31 +228,30 @@ class HellscubeDatabaseCog(commands.Cog):
             return
         
         matchingCards = searchFor(restrictions)
+        if matchingCards.__len__ > 100:
+           await ctx.send(f"There were {matchingCards.__len__} results you fucking moron.")
+           return
         message = printCardNames(matchingCards)
         if message == "":
             message = "Nothing found"
-        n=2000
+        n = 2000
         messages = [message[i:i+n] for i in range(0, len(message), n)]
         for msg in messages:
             await ctx.send(msg)
-
-
-
-
 
 async def setup(bot:commands.Bot):
     await bot.add_cog(HellscubeDatabaseCog(bot))
 
 
 
-def searchFor(searchDict):
+def searchFor(searchDict:dict):
   for i in ["types", "text", "flavor", "name", "creator", "cardset", "legality"]:
     if not i in searchDict.keys():
       searchDict[i] = None
   for i in ["cmc", "pow", "tou", "loy", "color"]:
     if not i in searchDict.keys():
       searchDict[i] = [(None, None)]
-  hits = []
+  hits:list[cardSearch] = []
   for i in cardList:
     if checkForString(searchDict["types"], i.types())\
     and checkForString(searchDict["text"], i.text())\

@@ -8,15 +8,12 @@ import gspread
 import pprint as pp
 from datetime import datetime, timezone, timedelta
 from reddit_functions import postToReddit
-
-
+from checkErrataSubmissions import checkErrataSubmissions
 
 from shared_vars import intents,googleClient,drive
 import is_mork
 from secrets.discord_token import DISCORD_ACCESS_TOKEN
 import hc_constants
-
-
 
 class MyBot(commands.Bot):
     async def setup_hook(self):
@@ -53,7 +50,6 @@ async def check_cogs(ctx:commands.Context, cog_name):
 cardSheetUnapproved = googleClient.open_by_key(hc_constants.HELLSCUBE_DATABASE).get_worksheet(1)
 
 
-
 global blueRed
 blueRed = False
 
@@ -68,65 +64,39 @@ async def checkSubmissions():
   if messages is None:
     return
   messages = [message async for message in messages]
-  for i in range(len(messages)):
-    if "@everyone" in messages[i].content:
+  for messageEntry in messages:
+    if "@everyone" in messageEntry.content:
       continue # uhhhhh what is this
-    upvote = get(messages[i].reactions, emoji=hc_constants.VOTE_UP)
-    downvote = get(messages[i].reactions, emoji=hc_constants.VOTE_DOWN)
+    upvote = get(messageEntry.reactions, emoji=hc_constants.VOTE_UP)
+    downvote = get(messageEntry.reactions, emoji=hc_constants.VOTE_DOWN)
     if upvote and downvote:
       upCount = upvote.count
       downCount = downvote.count
-      messageAge = timeNow - messages[i].created_at
+      messageAge = timeNow - messageEntry.created_at
       # card was voted in
-      if (upCount - downCount) > 24 and len(messages[i].attachments) > 0 and messageAge >= timedelta(days=1) and is_mork.is_mork(messages[i].author.id):
+      if (upCount - downCount) > 24 and len(messageEntry.attachments) > 0 and messageAge >= timedelta(days=1) and is_mork.is_mork(messageEntry.author.id):
         if downCount == 1:
           user = await bot.fetch_user(hc_constants.EXALTED_ONE) # I'm assuming this was to avoid spam
-          await user.send("Verify " + messages[i].jump_url)
+          await user.send("Verify " + messageEntry.jump_url)
           continue
-        file = await messages[i].attachments[0].to_file()
-        copy = await messages[i].attachments[0].to_file()
-        copy2 = await messages[i].attachments[0].to_file()
-        acceptContent = messages[i].content + " was accepted "
-        mention = f'<@{str(messages[i].raw_mentions[0])}>'
-        nickMention = f'<@{str(messages[i].raw_mentions[0])}>'
-        removeMention = messages[i].content.replace(mention, "")
+        file = await messageEntry.attachments[0].to_file()
+        copy = await messageEntry.attachments[0].to_file()
+        copy2 = await messageEntry.attachments[0].to_file()
+        acceptContent = messageEntry.content + " was accepted "
+        mention = f'<@{str(messageEntry.raw_mentions[0])}>'
+        nickMention = f'<@{str(messageEntry.raw_mentions[0])}>'
+        removeMention = messageEntry.content.replace(mention, "")
         removeMention = removeMention.replace(nickMention, "")
-        vetoContent = removeMention + messages[i].mentions[0].name
-        logContent = f"{acceptContent}, message id: {messages[i].id}, upvotes: {upCount}, downvotes: {downCount}"
+        vetoContent = removeMention + messageEntry.mentions[0].name
+        logContent = f"{acceptContent}, message id: {messageEntry.id}, upvotes: {upCount}, downvotes: {downCount}"
         await acceptedChannel.send(content=acceptContent)
         await acceptedChannel.send(content="", file=file)
         await vetoChannel.send(content=vetoContent, file=copy)
         await logChannel.send(content=logContent, file=copy2)
-        await messages[i].delete()
+        await messageEntry.delete()
         continue
   print("------done checking submissions-----")
 
-async def checkErrataSubmissions():
-  subChannel = bot.get_channel(hc_constants.FOUR_ZERO_ERRATA_SUBMISSIONS_CHANNEL)
-  acceptedChannel = bot.get_channel(hc_constants.FOUR_ZERO_ERRATA_ACCEPTED_CHANNEL)
-  timeNow = datetime.now(timezone.utc)
-  ##  timeNow = timeNow.replace(tzinfo=None)
-  oneWeek = timeNow + timedelta(weeks=-1)
-  messages = subChannel.history(after=oneWeek, limit=None)
-  if messages is None:
-    return
-  messages = [message async for message in messages]
-  for i in range(len(messages)):
-    if "@everyone" in messages[i].content:
-      continue
-    if get(messages[i].reactions, emoji=hc_constants.ACCEPT):
-      continue
-    upvote = get(messages[i].reactions, emoji=hc_constants.VOTE_UP)
-    downvote = get(messages[i].reactions, emoji=hc_constants.VOTE_DOWN)
-    messageAge = timeNow - messages[i].created_at
-    if upvote and downvote:
-      upCount = upvote.count
-      downCount = downvote.count
-      if (upCount - downCount) > 14 and messageAge >= timedelta(days=1):
-        acceptContent = messages[i].content
-        await acceptedChannel.send(content=acceptContent)
-        await messages[i].add_reaction(hc_constants.ACCEPT)
-  print("------done checking errata submissions-----")
 
 
 log = ""
@@ -190,7 +160,7 @@ async def macro(ctx:commands.Context, thing:str, *args):
 async def gameNight(ctx:commands.Context, mode, game):
   #create, remove, get, lose, tag, list
   if mode == "create":
-    file = drive.CreateFile({'id':hc_constants.GAME_FILE_ID})
+    file = drive.CreateFile({'id':hc_constants.GAME_NIGHT_ROLES})
     output = file.GetContentString()
     if not game.lower() in output.replace('\r','').split("\n"):
       output = output + game.lower() + "\n"
@@ -200,12 +170,12 @@ async def gameNight(ctx:commands.Context, mode, game):
     else:
       await ctx.send("This game already exist.")
   if mode == "list":
-    output = drive.CreateFile({'id':hc_constants.GAME_FILE_ID}).GetContentString()
+    output = drive.CreateFile({'id':hc_constants.GAME_NIGHT_ROLES}).GetContentString()
     await ctx.send(output)
   if mode == "amount":
-    games = drive.CreateFile({'id':hc_constants.GAME_FILE_ID}).GetContentString().replace('\r','').split("\n")
+    games = drive.CreateFile({'id':hc_constants.GAME_NIGHT_ROLES}).GetContentString().replace('\r','').split("\n")
     amount = []
-    users = drive.CreateFile({'id':hc_constants.USER_GAME_FILE_ID}).GetContentString().replace('\r','').split("\n")
+    users = drive.CreateFile({'id':hc_constants.GAME_NIGHT_PEOPLE}).GetContentString().replace('\r','').split("\n")
     for x in range(len(games)):
       amount.append(0)
       for i in users:
@@ -219,10 +189,10 @@ async def gameNight(ctx:commands.Context, mode, game):
   if mode == "remove":
     role = get(ctx.message.author.guild.roles, id=int(631288945044357141))
     if role in ctx.author.roles:
-      file1 = drive.CreateFile({'id':hc_constants.GAME_FILE_ID})
+      file1 = drive.CreateFile({'id':hc_constants.GAME_NIGHT_ROLES})
       gnRoles = file1.GetContentString()
       if game.lower() in gnRoles.replace('\r','').split("\n"):
-        file2 = drive.CreateFile({'id':hc_constants.USER_GAME_FILE_ID})
+        file2 = drive.CreateFile({'id':hc_constants.GAME_NIGHT_PEOPLE})
         gnPeople = file2.GetContentString()
         options = gnPeople.replace('\r','').split("\n")
         for i in options:
@@ -246,8 +216,8 @@ async def gameNight(ctx:commands.Context, mode, game):
     else:
       await ctx.send("Removing games is only available to mods, probably tag one of them if you need the game removed.")
   if mode == "get":
-    if game.lower() in drive.CreateFile({'id':hc_constants.GAME_FILE_ID}).GetContentString().replace('\r','').split("\n"):
-      file = drive.CreateFile({'id':hc_constants.USER_GAME_FILE_ID})
+    if game.lower() in drive.CreateFile({'id':hc_constants.GAME_NIGHT_ROLES}).GetContentString().replace('\r','').split("\n"):
+      file = drive.CreateFile({'id':hc_constants.GAME_NIGHT_PEOPLE})
       gnPeople = file.GetContentString()
       gnPeople = gnPeople + (str(ctx.author.id)) + "$%$%$" + game.lower() + "\n"
       file.SetContentString(gnPeople)
@@ -256,8 +226,8 @@ async def gameNight(ctx:commands.Context, mode, game):
     else:
       await ctx.send("This game doesn't exist.")
   if mode == "lose":
-    if game.lower() in drive.CreateFile({'id':hc_constants.GAME_FILE_ID}).GetContentString().replace('\r','').split("\n"):
-      file = drive.CreateFile({'id':hc_constants.USER_GAME_FILE_ID})
+    if game.lower() in drive.CreateFile({'id':hc_constants.GAME_NIGHT_ROLES}).GetContentString().replace('\r','').split("\n"):
+      file = drive.CreateFile({'id':hc_constants.GAME_NIGHT_PEOPLE})
       gnPeople = file.GetContentString()
       options = gnPeople.replace('\r','').split("\n")
       for i in options:
@@ -271,8 +241,8 @@ async def gameNight(ctx:commands.Context, mode, game):
     else:
       await ctx.send("This game doesn't exist.")
   if mode == "tag":
-    if game.lower() in drive.CreateFile({'id':hc_constants.GAME_FILE_ID}).GetContentString().replace('\r','').split("\n"):
-      options = drive.CreateFile({'id':hc_constants.USER_GAME_FILE_ID}).GetContentString().replace('\r','').split("\n")
+    if game.lower() in drive.CreateFile({'id':hc_constants.GAME_NIGHT_ROLES}).GetContentString().replace('\r','').split("\n"):
+      options = drive.CreateFile({'id':hc_constants.GAME_NIGHT_PEOPLE}).GetContentString().replace('\r','').split("\n")
       userIds = []
       for i in options:
         if "$%$%$" in i:
@@ -285,8 +255,8 @@ async def gameNight(ctx:commands.Context, mode, game):
     else:
       await ctx.send("This game doesn't exist.")
   if mode == "who":
-    if game.lower() in drive.CreateFile({'id':hc_constants.GAME_FILE_ID}).GetContentString().replace('\r','').split("\n"):
-      options = drive.CreateFile({'id':hc_constants.USER_GAME_FILE_ID}).GetContentString().replace('\r','').split("\n")
+    if game.lower() in drive.CreateFile({'id':hc_constants.GAME_NIGHT_ROLES}).GetContentString().replace('\r','').split("\n"):
+      options = drive.CreateFile({'id':hc_constants.GAME_NIGHT_PEOPLE}).GetContentString().replace('\r','').split("\n")
       userIds = []
       for i in options:
         if "$%$%$" in i:
@@ -303,7 +273,7 @@ async def gameNight(ctx:commands.Context, mode, game):
     else:
       await ctx.send("This game doesn't exist.")
   if mode == "search":
-    options = drive.CreateFile({'id':hc_constants.USER_GAME_FILE_ID}).GetContentString().replace('\r','').split("\n")
+    options = drive.CreateFile({'id':hc_constants.GAME_NIGHT_PEOPLE}).GetContentString().replace('\r','').split("\n")
     userGames = []
     for i in options:
       if "$%$%$" in i:

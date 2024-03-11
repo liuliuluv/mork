@@ -1,18 +1,12 @@
-
-
-
 import os
-
 import asyncpraw
 from discord import File
-
 from secrets.reddit_secrets import ID,SECRET,PASSWORD,USER_AGENT,NAME
 
 async def postToReddit(title:str, file:File, flair:str=""):
     image_path = f'tempImages/{file.filename}'
     with open(image_path, 'wb') as out: ## Open temporary file as bytes
         out.write(file.fp.read())  ## Read bytes into file
-
 
     reddit = asyncpraw.Reddit(
         client_id=ID,

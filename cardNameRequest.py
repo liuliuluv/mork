@@ -1,4 +1,5 @@
 from shared_vars import allCards
+
 async def cardNameRequest(requestName):
   maxWeight = 1
   maxWeightName = ""

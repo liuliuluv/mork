@@ -9,13 +9,11 @@ from discord.ext import commands
 from discord.message import Message
 from discord.utils import get
 from CardClasses import Card
-from cardNameRequest import cardNameRequest
 
 import hc_constants
 from is_mork import is_mork
 from printCardImages import printCardImages
 from shared_vars import intents,cardSheet,allCards
-from reddit_functions import postToReddit
 
 ONE_HOUR = 3600
 
@@ -48,7 +46,7 @@ class LifecycleCog(commands.Cog):
                 log = ""
         
     @commands.Cog.listener()
-    async def on_raw_reaction_remove(self,payload:RawReactionActionEvent):
+    async def on_raw_reaction_remove(self, payload:RawReactionActionEvent):
         # debug
         return
         global log
@@ -59,10 +57,10 @@ class LifecycleCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(member):
-        await member.send(f"Hey there! Welcome to HellsCube. Obligatory pointing towards <#{hc_constants.RULES_CHANNEL}>, <#{hc_constants.FAQ}> and <#{hc_constants.RESOURCES_CHANNEL}>. Especially the explanation for all our channels and bot command to set your pronouns. Enjoy your stay!")
+        await member.send(f"Hey there! Welcome to HellsCube. Obligatory pointing towards <#{hc_constants.RULES_CHANNEL}>, <#{hc_constants.FAQ_CHANNEL}> and <#{hc_constants.RESOURCES_CHANNEL}>. Especially the explanation for all our channels and bot command to set your pronouns. Enjoy your stay!")
 
     @commands.Cog.listener()
-    async def on_raw_reaction_add(self,reaction:RawReactionActionEvent):
+    async def on_raw_reaction_add(self, reaction:RawReactionActionEvent):
         if str(reaction.emoji) == hc_constants.DENY and not is_mork(reaction.user_id):
             guild = self.bot.get_guild(reaction.guild_id)
             channel = guild.get_channel(reaction.channel_id)

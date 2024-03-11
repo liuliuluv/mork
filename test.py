@@ -8,7 +8,6 @@ from secrets.reddit_secrets import ID,SECRET,PASSWORD,USER_AGENT,NAME
 
 from shared_vars import drive,googleClient
 
-TEST_PHOTOS_ALBUM='AF1QipMRowgw87imsEaj-LMCn0iWWn5QlIXifYJqndzDykpO1E0wyTjvxsBCpKk3JTccLA'
 
 nammappings=[]
 

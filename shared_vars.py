@@ -4,7 +4,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 import gspread
 from pydrive2.drive import GoogleDrive
 from pydrive2.auth import GoogleAuth
-from CardClasses import Card, cardSearch
+from CardClasses import Card
 import hc_constants
 
 
@@ -17,14 +17,12 @@ intents.message_content = True
 intents.guilds = True
 
 
-
-
-
 scope = [
     "https://spreadsheets.google.com/feeds",
     'https://www.googleapis.com/auth/spreadsheets',
     "https://www.googleapis.com/auth/drive.file",
-    "https://www.googleapis.com/auth/drive"]
+    "https://www.googleapis.com/auth/drive"
+    ]
 
 
 gauth = GoogleAuth()

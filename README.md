@@ -32,3 +32,5 @@ to get a copy to work you'd have to do a few things
 
 # Concepts
 Uh go read about discord cogs, just write your feature-specific code in one of those, then reference it in Mork.
+
+If Mork needs to track that it has interacted with a post outside of the submissions channel, it usually uses `await message.add_reaction(hc_constants.ACCEPT)`. It would be super nice to unify that.

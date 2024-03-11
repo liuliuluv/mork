@@ -112,8 +112,7 @@ async def addToDrive(message, user, fileID):
   file.Upload()
 
 def getFileForChannelId(channelId):
-  # nsfw file else sfw one ??????
-  return "1RNw6b4wUck3HIw1kF7ewmtXE6gSmXSKt" if channelId == hc_constants.UNKNOWN_CHANNEL else "1EdaLJl9Rs0RuigiivckOM1obPmQ99hMg"
+  return  "1EdaLJl9Rs0RuigiivckOM1obPmQ99hMg"
 
 
 

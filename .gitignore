@@ -1,8 +1,9 @@
 .DS_store
 secrets/discord_token.py
-secrets/mycreds.txt
-secrets/other_stuff.md
 secrets/client_secrets.json
+secrets/reddit_secrets.py
+
+tempImages/.*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

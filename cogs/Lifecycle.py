@@ -1,15 +1,21 @@
 import asyncio
+import io
+import os
+import re
+import aiohttp
 from discord import  RawReactionActionEvent
 import discord
 from discord.ext import commands
 from discord.message import Message
 from discord.utils import get
 from CardClasses import Card
+from cardNameRequest import cardNameRequest
 
 import hc_constants
 from is_mork import is_mork
 from printCardImages import printCardImages
 from shared_vars import intents,cardSheet,allCards
+from test import postToReddit
 
 ONE_HOUR = 3600
 
@@ -20,46 +26,6 @@ bannedUserIds = []
 class LifecycleCog(commands.Cog):
     def __init__(self, bot:commands.Bot):
         self.bot = bot
-
-        
-    @commands.Cog.listener()
-    async def on_raw_reaction_remove(self,payload:RawReactionActionEvent):
-        # debug
-        return
-        global log
-        if payload.channel_id == hc_constants.SUBMISSIONS_CHANNEL:
-            serv = self.bot.get_guild(hc_constants.SERVER_ID)
-            user = serv.get_member(payload.user_id)
-            log += f"{payload.message_id}: Removed {payload.emoji.name} from {payload.user_id} ({user.name}|{user.nick}) at {datetime.now()}\n"
-
-    @commands.Cog.listener()
-    async def on_member_join(member):
-        await member.send(f"Hey there! Welcome to HellsCube. Obligatory pointing towards <#{hc_constants.RULES_CHANNEL}>, <#{hc_constants.FAQ}> and <#{hc_constants.RESOURCES_CHANNEL}>. Especially the explanation for all our channels and bot command to set your pronouns. Enjoy your stay!")
-
-    @commands.Cog.listener()
-    async def on_raw_reaction_add(self,reaction:RawReactionActionEvent):
-        # debug
-        return
-        if str(reaction.emoji) == "❌" and not is_mork(reaction.user_id):
-            guild = self.bot.get_guild(reaction.guild_id)
-            channel = guild.get_channel(reaction.channel_id)
-            message = await channel.fetch_message(reaction.message_id)
-            if reaction.member in message.mentions and is_mork(message.author.id):
-                await message.delete()
-                return
-            if message.reference:
-                messageReference = await channel.fetch_message(message.reference.message_id)
-                if reaction.member == messageReference.author and is_mork(message.author.id):
-                    await message.delete()
-                    return
-
-    @commands.Cog.listener()
-    async def on_thread_create(thread):
-        try:
-           await thread.join()
-        except:
-            print("Can't join that thread.")
-
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -80,10 +46,71 @@ class LifecycleCog(commands.Cog):
             with open("log.txt", 'a', encoding='utf8') as file:
                 file.write(log)
                 log = ""
+        
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self,payload:RawReactionActionEvent):
+        # debug
+        return
+        global log
+        if payload.channel_id == hc_constants.SUBMISSIONS_CHANNEL:
+            serv = self.bot.get_guild(hc_constants.SERVER_ID)
+            user = serv.get_member(payload.user_id)
+            log += f"{payload.message_id}: Removed {payload.emoji.name} from {payload.user_id} ({user.name}|{user.nick}) at {datetime.now()}\n"
 
+    @commands.Cog.listener()
+    async def on_member_join(member):
+        await member.send(f"Hey there! Welcome to HellsCube. Obligatory pointing towards <#{hc_constants.RULES_CHANNEL}>, <#{hc_constants.FAQ}> and <#{hc_constants.RESOURCES_CHANNEL}>. Especially the explanation for all our channels and bot command to set your pronouns. Enjoy your stay!")
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self,reaction:RawReactionActionEvent):
+        if str(reaction.emoji) == hc_constants.DENY and not is_mork(reaction.user_id):
+            guild = self.bot.get_guild(reaction.guild_id)
+            channel = guild.get_channel(reaction.channel_id)
+            message = await channel.fetch_message(reaction.message_id)
+            if not is_mork(message.author.id):
+                return
+            if reaction.member in message.mentions:
+                await message.delete()
+                return
+            if message.reference:
+                messageReference = await channel.fetch_message(message.reference.message_id)
+                if reaction.member == messageReference.author:
+                    await message.delete()
+                    return
+
+    @commands.Cog.listener()
+    async def on_thread_create(thread):
+        try:
+           await thread.join()
+        except:
+            print("Can't join that thread.")
 
     @commands.Cog.listener()
     async def on_message(self,message:Message):
+        if (message.author.id == hc_constants.LLLLLL and "XX" in message.content):
+            print(message.content)
+            card=await cardNameRequest(message.content.replace("XX",""))
+            
+            url =  allCards[card].getImg()
+            print(url)
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as resp:
+                    if resp.status != 200:
+                        await message.reply('Something went wrong while getting the link for ' + card + '. Wait for @exalted to fix it.')
+                        return
+                    # currently extraFilename looks like inline;filename="                                Skald.png"
+                    extraFilename = resp.headers.get("Content-Disposition")  
+                    parsedFilename = re.findall('inline;filename="(.*)"', extraFilename)[0]
+                    data = await resp.read()
+ 
+                    image_path=f'tempImages/{parsedFilename}'
+                    with open(image_path,'wb') as out: ## Open temporary file as bytes
+                        out.write(data)                ## Read bytes into file
+
+                    await postToReddit(image_path, title=f'{card} was accepted')
+
+                    ## Do stuff with module/file
+                    os.remove(image_path) ## Delete file when done
         #debug
         return
         if (message.author == client.user
@@ -124,11 +151,8 @@ class LifecycleCog(commands.Cog):
             sentMessage = await message.channel.send(content = message.content + " by " + message.author.mention, file = file)
             await sentMessage.add_reaction(hc_constants.VOTE_UP)
             await sentMessage.add_reaction(hc_constants.VOTE_DOWN)
-            await sentMessage.add_reaction("❌")
+            await sentMessage.add_reaction(hc_constants.DENY)
             await message.delete()
-        if message.channel.id == hc_constants.ZBEAN_ICON_CHANNEL:
-            role = get(message.author.guild.roles, id=int(770642233598672906))
-            await message.author.add_roles(role)
         if "{{" in message.content:
             await printCardImages(message)
         try:

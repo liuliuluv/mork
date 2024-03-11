@@ -52,7 +52,6 @@ async def check_cogs(ctx:commands.Context, cog_name):
 cardSheetUnapproved = googleClient.open_by_key(hc_constants.HELLSCUBE_DATABASE).get_worksheet(1)
 
 
-statusList = ["Haha Gottem in 2024", "Hugh Man in EDH", "the funny dreadmaw card", "Hellscube Victory in Competative", "with old companion rules", "Obama tribal EDH", "irefeT tribal", "Temple of @creator", "cheat big shit out", "v1.0", "2/3 Corpse Knight", "Forbiddenest Ritual for value", "71 lands and Haha Gottem", "PICKLE K'RRIK!", "\"colorless\" card draw", "HellsEdh", "hellscube", "Hellscube Jumpstart", "comboless Zero with Nothing", "with MaRo's feelings", "with Exalted's sanity", "Slot Filler for draw cards equal to 2 minus one", "Epicnessbrian tribal", "a minigame", "a subgame", "a supergame", "The First Pick", "Tendrils of Shahrazad", "hide and seek with Liu Bei's wallet", "with slots", "Redundant Acceleration for 1 card", "with !podcast", "with #brainstorming-shitposts", "with no banlist", "Hatebear With Useful Abilities", "JacobsRedditUsername Tribal", "white card draw!!1!?1!??!?", "Force of Bill for 5 mana", "with bears. So... many... bears...", "Epic Games", "6-mana 1/1s", "a full playset of worm", "all of the murder but _ cycle", "with the idea of skipping to 3.0", "1 cmc super friends", "all the creator lands", "strip hellscube vintage", "cooldownguy vintage", "6-color goodstuff", "a 41 card draft deck", "infinite basics in the sideboard", "10.000 Islands in the main", "#avatar in discord", "Avatar of Discord, Please spam Attack. Please", "Avatar of Discord, Please spam Defence. Please", "Avatar of Discord, Please spam Evasion. Please", "Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing Bears Repeating Playing...", "blue bears"]
 
 global blueRed
 blueRed = False
@@ -63,7 +62,6 @@ async def checkSubmissions():
   acceptedChannel = bot.get_channel(hc_constants.SUBMISSIONS_DISCUSSION_CHANNEL)
   logChannel = bot.get_channel(hc_constants.MORK_SUBMISSIONS_LOGGING_CHANNEL)
   timeNow = datetime.now(timezone.utc)
-##  timeNow = timeNow.replace(tzinfo=None)
   oneWeek = timeNow + timedelta(weeks=-1)
   messages = subChannel.history(after=oneWeek, limit=None)
   if messages is None:
@@ -71,18 +69,17 @@ async def checkSubmissions():
   messages = [message async for message in messages]
   for i in range(len(messages)):
     if "@everyone" in messages[i].content:
-      continue
+      continue # uhhhhh what is this
     upvote = get(messages[i].reactions, emoji=hc_constants.VOTE_UP)
     downvote = get(messages[i].reactions, emoji=hc_constants.VOTE_DOWN)
-    messageAge = timeNow - messages[i].created_at
     if upvote and downvote:
       upCount = upvote.count
       downCount = downvote.count
-      #if (upvote.count - downvote.count) < -10 and len(messages[i].attachments) > 0 and messageAge >= timedelta(days=1):
-      #  await messages[i].delete()
+      messageAge = timeNow - messages[i].created_at
+      # card was voted in
       if (upCount - downCount) > 24 and len(messages[i].attachments) > 0 and messageAge >= timedelta(days=1) and is_mork.is_mork(messages[i].author.id):
         if downCount == 1:
-          user = await bot.fetch_user(hc_constants.EXALTED_ONE)
+          user = await bot.fetch_user(hc_constants.EXALTED_ONE) # I'm assuming this was to avoid spam
           await user.send("Verify " + messages[i].jump_url)
           continue
         file = await messages[i].attachments[0].to_file()
@@ -94,13 +91,14 @@ async def checkSubmissions():
         removeMention = messages[i].content.replace(mention, "")
         removeMention = removeMention.replace(nickMention, "")
         vetoContent = removeMention + messages[i].mentions[0].name
-        logContent = acceptContent + ", message id: " + str(messages[i].id) + ", upvotes: " + str(upCount) + ", downvotes: " + str(downCount)
+        logContent = f"{acceptContent}, message id: {messages[i].id}, upvotes: {upCount}, downvotes: {downCount}"
         await acceptedChannel.send(content=acceptContent)
         await acceptedChannel.send(content="", file=file)
         await vetoChannel.send(content=vetoContent, file=copy)
         await logChannel.send(content=logContent, file=copy2)
         await messages[i].delete()
         continue
+      # I think this can be deleted. don't want morkless submissions
       if (upCount - downCount) > 24 and len(messages[i].attachments) > 0 and messageAge >= timedelta(days=1):
         if downCount == 1:
           user = await bot.fetch_user(hc_constants.EXALTED_ONE)
@@ -132,7 +130,7 @@ async def checkErrataSubmissions():
   for i in range(len(messages)):
     if "@everyone" in messages[i].content:
       continue
-    if get(messages[i].reactions, emoji="✅"):
+    if get(messages[i].reactions, emoji=hc_constants.ACCEPT):
       continue
     upvote = get(messages[i].reactions, emoji=hc_constants.VOTE_UP)
     downvote = get(messages[i].reactions, emoji=hc_constants.VOTE_DOWN)
@@ -143,7 +141,7 @@ async def checkErrataSubmissions():
       if (upCount - downCount) > 14 and messageAge >= timedelta(days=1):
         acceptContent = messages[i].content
         await acceptedChannel.send(content=acceptContent)
-        await messages[i].add_reaction("✅")
+        await messages[i].add_reaction(hc_constants.ACCEPT)
   print("------done checking errata submissions-----")
 
 
@@ -152,7 +150,7 @@ log = ""
 @bot.command(name="dumplog")
 async def _dumplog(ctx:commands.Context):
     global log
-    if ctx.author.id == hc_constants.EXALTED_ONE:
+    if ctx.author.id == hc_constants.LLLLLL:
         with open("log.txt", 'a', encoding='utf8') as file:
             file.write(log)
             log = ""
@@ -173,7 +171,7 @@ async def status_task():
   return
   while True:
     creator = random.choice(cardSheet.col_values(3)[4:])
-    action = random.choice(statusList)
+    action = random.choice(hc_constants.statusList)
     status = action.replace("@creator", creator)
     print(status)
     await checkSubmissions()
@@ -194,13 +192,6 @@ async def macro(ctx:commands.Context, thing:str, *args):
           message += f"    {subname}\n"
     await ctx.send(message)
     return
-  if ctx.channel.id == hc_constants.UNKNOWN_CHANNEL:
-    if thing.lower() in hc_constants.macroNsfwList.keys():
-      if type(hc_constants.macroNsfwList[thing.lower()]) is str:
-        await ctx.send(hc_constants.macroNsfwList[thing.lower()].replace("@arg", " ".join(args)))
-      else:
-        await ctx.send(hc_constants.macroNsfwList[thing.lower()][args[0].lower()])
-      return
   if thing.lower() in hc_constants.macroList.keys():
     if type(hc_constants.macroList[thing.lower()]) is str:
       await ctx.send(hc_constants.macroList[thing.lower()].replace("@arg", " ".join(args)))
@@ -399,7 +390,7 @@ async def help(ctx:commands.Context):
 #    messages = bot.get_channel(hc_constants.VETO_CHANNEL).history(after=duration, limit=None)
 #    messages = await messages.flatten()
 #    for i in range(len(messages)):
-#      await messages[i].remove_reaction("✅", bot.get_user(hc_constants.MORK))
+#      await messages[i].remove_reaction(hc_constants.ACCEPT, bot.get_user(hc_constants.MORK))
 #    await ctx.send("removed all my recent ✅ from #veto-polls")
 
 def vetoAnnouncementHelper(cardArray, announcement, annIndex):
@@ -443,45 +434,45 @@ async def compileveto(ctx:commands.Context):
     vetoedCards = []
     earlyCards = []
     vetoHell = []
-    for i in range(len(messages)):
+    for messageEntry in messages:
       try:
-        upvote = get(messages[i].reactions, emoji=hc_constants.VOTE_UP).count
+        upvote = get(messageEntry.reactions, emoji=hc_constants.VOTE_UP).count
       except:
         upvote = -1
       try:
-        downvote = get(messages[i].reactions, emoji=hc_constants.VOTE_DOWN).count
+        downvote = get(messageEntry.reactions, emoji=hc_constants.VOTE_DOWN).count
       except:
         downvote = -1
       try:
-        errata = get(messages[i].reactions, emoji=bot.get_emoji(hc_constants.CIRION_SPELLING)).count
+        errata = get(messageEntry.reactions, emoji=bot.get_emoji(hc_constants.CIRION_SPELLING)).count
       except:
         errata = -1
-      if (len(messages[i].attachments) == 0):
+      if (len(messageEntry.attachments) == 0):
         continue
-      messageAge = timeNow - messages[i].created_at
-      if get(messages[i].reactions, emoji="✅") or get(messages[i].reactions, emoji="❌"):
+      messageAge = timeNow - messageEntry.created_at
+      if get(messageEntry.reactions, emoji=hc_constants.ACCEPT) or get(messageEntry.reactions, emoji=hc_constants.DENY):
         continue
       elif (messageAge < timedelta(days=1)):
-        earlyCards.append(messages[i])
+        earlyCards.append(messageEntry)
 
       elif (errata > 4
             and errata >= upvote
             and errata >= downvote):
-        errataedCards.append(messages[i])
-        await messages[i].add_reaction("✅")
-        thread = messages[i].guild.get_channel_or_thread(messages[i].id)
+        errataedCards.append(messageEntry)
+        await messageEntry.add_reaction(hc_constants.ACCEPT)
+        thread = messageEntry.guild.get_channel_or_thread(messageEntry.id)
         await thread.edit(archived = True)
 
       elif (upvote > 4
             and upvote >= downvote
             and upvote >= errata):
-        acceptedCards.append(messages[i])
-        await messages[i].add_reaction("✅")
-        thread = messages[i].guild.get_channel_or_thread(messages[i].id)
+        acceptedCards.append(messageEntry)
+        await messageEntry.add_reaction(hc_constants.ACCEPT)
+        thread =messageEntry.guild.get_channel_or_thread(messageEntry.id)
         await thread.edit(archived = True)
-        file = await messages[i].attachments[0].to_file() # lol okay here's the other weird file and copy
-        copy = await messages[i].attachments[0].to_file()
-        acceptanceMessage = messages[i].content
+        file = await messageEntry.attachments[0].to_file() # lol okay here's the other weird file and copy
+        copy = await messageEntry.attachments[0].to_file()
+        acceptanceMessage = messageEntry.content
         if (len(acceptanceMessage)) == 0:
           acceptanceMessage = "**Crazy card with no name and no author**"
           dbname = ""
@@ -501,7 +492,9 @@ async def compileveto(ctx:commands.Context):
               acceptanceMessage += " by " + thisLine[i]
               dbauthor = str(thisLine[i])
 
+
         sentMessage = await cardListChannel.send(content=acceptanceMessage, file=copy)
+
         dburl = sentMessage.attachments[0].url
         allCardNames = cardSheetUnapproved.col_values(1)
         newCard = True
@@ -531,14 +524,14 @@ async def compileveto(ctx:commands.Context):
 
 
       elif (downvote > 4 and downvote >= upvote and downvote >= errata):
-        vetoedCards.append(messages[i])
-        await messages[i].add_reaction("✅")
+        vetoedCards.append(messageEntry)
+        await messageEntry.add_reaction(hc_constants.ACCEPT)
 
       elif (messageAge > timedelta(days=3)):
-        thread = messages[i].guild.get_channel_or_thread(messages[i].id)
-        role = get(messages[i].guild.roles, id=int(798689768379908106))
+        thread = messageEntry.guild.get_channel_or_thread(messageEntry.id)
+        role = get(messageEntry.guild.roles, id=int(798689768379908106))
         await thread.send(role.mention)
-        vetoHell.append(messages[i])
+        vetoHell.append(messageEntry)
 
 
     announcement = [""]

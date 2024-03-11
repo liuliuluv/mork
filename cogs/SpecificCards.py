@@ -525,7 +525,7 @@ class SpecificCardsCog(commands.Cog):
         State = State[amountLeft:]
         State = sorted(State, key=itemgetter(1), reverse=True)
         State = sorted(State, key=itemgetter(0), reverse=True)
-        count = 0
+      
         for i in State:
             result += str(i[0])
             result += "/"

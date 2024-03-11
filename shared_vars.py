@@ -38,7 +38,7 @@ googleClient = gspread.authorize(creds)
 
 
 cardSheet = googleClient.open_by_key(hc_constants.HELLSCUBE_DATABASE).get_worksheet(0)
-print(cardSheet)
+
 
 
 #https://lh3.googleusercontent.com/d/1IZl1kGl0ajV4I7UY5DbQSL2yaF_i_uka

@@ -32,11 +32,11 @@ async def sendImageReply(url, cardname, message:Message):
       if resp.status != 200:
         await message.reply('Something went wrong while getting the link for ' + cardname + '. Wait for @exalted to fix it.')
         return
-
-      extraFilename = resp.headers.get("Content-Disposition")   # currently extraFilename looks like inline;filename="                                Skald.png"
+       # currently extraFilename looks like inline;filename="                                Skald.png"
+      extraFilename = resp.headers.get("Content-Disposition")  
       parsedFilename = re.findall('inline;filename="(.*)"', extraFilename)[0]
       data = io.BytesIO(await resp.read())
       sentMessage = await message.reply(file=discord.File(data, parsedFilename), mention_author=False)
-      await sentMessage.add_reaction("❌")
+      await sentMessage.add_reaction(hc_constants.DENY)
 
 

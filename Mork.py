@@ -7,6 +7,7 @@ import random
 import gspread
 import pprint as pp
 from datetime import datetime, timezone, timedelta
+from reddit_functions import postToReddit
 
 
 
@@ -98,23 +99,6 @@ async def checkSubmissions():
         await logChannel.send(content=logContent, file=copy2)
         await messages[i].delete()
         continue
-      # I think this can be deleted. don't want morkless submissions
-      if (upCount - downCount) > 24 and len(messages[i].attachments) > 0 and messageAge >= timedelta(days=1):
-        if downCount == 1:
-          user = await bot.fetch_user(hc_constants.EXALTED_ONE)
-          await user.send("Verify " + messages[i].jump_url)
-          continue
-        file = await messages[i].attachments[0].to_file()
-        copy = await messages[i].attachments[0].to_file()
-        copy2 = await messages[i].attachments[0].to_file()
-        acceptContent = f'{messages[i].content} was accepted {messages[i].author.mention}'
-        vetoContent = messages[i].content + " by " + messages[i].author.name
-        logContent = acceptContent + ", message id: " + str(messages[i].id) + ", upvotes: " + str(upCount) + ", downvotes: " + str(downCount)
-        await acceptedChannel.send(content=acceptContent)
-        await acceptedChannel.send(content="", file=file)
-        await vetoChannel.send(content=vetoContent, file=copy)
-        await logChannel.send(content=logContent, file=copy2)
-        await messages[i].delete()
   print("------done checking submissions-----")
 
 async def checkErrataSubmissions():
@@ -373,7 +357,7 @@ async def BlueRed(ctx:commands.Context):
 async def menu(ctx:commands.Context):
   if ctx.channel.id == hc_constants.RESOURCES_CHANNEL or hc_constants.BOT_TEST_CHANNEL:
     embed = discord.Embed(title="Resources Menu", description="[Channel Explanation](https://discord.com/channels/631288872814247966/803384271766683668/803384426360078336)\n[Command List](https://discord.com/channels/631288872814247966/803384271766683668/803389199503982632)\n[Achievements](https://discord.com/channels/631288872814247966/803384271766683668/803389622247882782)\n[Database](https://discord.com/channels/631288872814247966/803384271766683668/803390530145878057)\n[Release Notes](https://discord.com/channels/631288872814247966/803384271766683668/803390718801346610)\n[Cubecobras](https://discord.com/channels/631288872814247966/803384271766683668/803391239294025748)\n[Tabletop Simulator](https://discord.com/channels/631288872814247966/803384271766683668/803391314095636490)")
-    await ctx.send(embed=embed)
+    await ctx.send(embed)
 
 @bot.command()
 async def help(ctx:commands.Context):
@@ -393,7 +377,7 @@ async def help(ctx:commands.Context):
 #      await messages[i].remove_reaction(hc_constants.ACCEPT, bot.get_user(hc_constants.MORK))
 #    await ctx.send("removed all my recent ✅ from #veto-polls")
 
-def vetoAnnouncementHelper(cardArray, announcement, annIndex):
+def vetoAnnouncementHelper(cardArray:list, announcement:list[str], annIndex:int):
   for i in cardArray:
     thisLine = i.content
     if len(announcement[annIndex]) + len(thisLine) > 1950:
@@ -420,7 +404,6 @@ async def compileveto(ctx:commands.Context):
     vetoDiscussionChannel = bot.get_channel(hc_constants.VETO_DISCUSSION_CHANNEL)
     cardListChannel = bot.get_channel(hc_constants.FOUR_ONE_CARD_LIST_CHANNEL)
     timeNow = datetime.now(timezone.utc)  
-##    timeNow = timeNow.replace(tzinfo=None)
     twoWeekAgo = timeNow + timedelta(days=-28)
     epicCatchphrases = ["If processing lasts more than 5 minutes, consult your doctor.", "on it, yo.", "ya ya gimme a sec", "processing...", "You're not the boss of me", "ok, 'DAD'", "but what of the children?", "?", "workin' on it!", "on it!", "can do, cap'n!", "raseworter pro tip: run it back, but with less 'tude next time.", "who? oh yeah sure thing b0ss", "how about no for a change?", "CAAAAAAAAAAAAAAN DO!", "i'm afraid i can't let you do that.", "i mean like, if you say so, man", "WOOOOOOOOOOOOOOOOOOOOOOOOOOOO", "*nuzzles u*"]
     await ctx.send(random.choice(epicCatchphrases))
@@ -432,7 +415,6 @@ async def compileveto(ctx:commands.Context):
     acceptedCards = []
     errataedCards = []
     vetoedCards = []
-    earlyCards = []
     vetoHell = []
     for messageEntry in messages:
       try:
@@ -453,8 +435,9 @@ async def compileveto(ctx:commands.Context):
       if get(messageEntry.reactions, emoji=hc_constants.ACCEPT) or get(messageEntry.reactions, emoji=hc_constants.DENY):
         continue
       elif (messageAge < timedelta(days=1)):
-        earlyCards.append(messageEntry)
+        ... # No idea why this case was here...
 
+      # Errata needed case
       elif (errata > 4
             and errata >= upvote
             and errata >= downvote):
@@ -463,6 +446,7 @@ async def compileveto(ctx:commands.Context):
         thread = messageEntry.guild.get_channel_or_thread(messageEntry.id)
         await thread.edit(archived = True)
 
+      # Accepted case
       elif (upvote > 4
             and upvote >= downvote
             and upvote >= errata):
@@ -473,27 +457,27 @@ async def compileveto(ctx:commands.Context):
         file = await messageEntry.attachments[0].to_file() # lol okay here's the other weird file and copy
         copy = await messageEntry.attachments[0].to_file()
         acceptanceMessage = messageEntry.content
+        dbname = ""
+        dbauthor = ""
         if (len(acceptanceMessage)) == 0:
-          acceptanceMessage = "**Crazy card with no name and no author**"
-          dbname = ""
-          dbauthor = ""
+          ... # This is really the case of setting both to "", but due to scoping i got lazy
         elif (acceptanceMessage[0:3] == "by "):
-          acceptanceMessage = "**Silly card with no name** " + acceptanceMessage
-          dbname = ""
           dbauthor = str((acceptanceMessage.split("by "))[1])
         else:
-          thisLine = acceptanceMessage.split(" by ")
-          for i in range(len(thisLine)):
-            if i == 0:
-              acceptanceMessage = "**" + thisLine[0] + "**"
-              dbname = str(thisLine[0])
-              dbauthor = ""
-            else:
-              acceptanceMessage += " by " + thisLine[i]
-              dbauthor = str(thisLine[i])
+          [firstPart, secondPart] = acceptanceMessage.split(" by ")
+          dbname = str(firstPart)
+          dbauthor = str(secondPart)
 
+        resolvedName = dbname if dbname !="" else "Crazy card with no name"
+        resolvedAuthor = dbauthor if dbauthor != "" else "no author"
+        sentMessage = await cardListChannel.send(content=f"**{resolvedName}** by **{resolvedAuthor}**", file=copy)
 
-        sentMessage = await cardListChannel.send(content=acceptanceMessage, file=copy)
+        try:
+          postToReddit(file=copy,
+                       title=f"{resolvedName} by {resolvedAuthor} was accepted!",
+                       flair=hc_constants.ACCEPTED_FLAIR)
+        except:
+          ...
 
         dburl = sentMessage.attachments[0].url
         allCardNames = cardSheetUnapproved.col_values(1)
@@ -522,11 +506,12 @@ async def compileveto(ctx:commands.Context):
           if italicsRangesA1 != []:
             cardSheetUnapproved.format(italicsRangesA1, {'textFormat': {'italic': True}})
 
-
+      # Veto case
       elif (downvote > 4 and downvote >= upvote and downvote >= errata):
         vetoedCards.append(messageEntry)
-        await messageEntry.add_reaction(hc_constants.ACCEPT)
+        await messageEntry.add_reaction(hc_constants.ACCEPT) # wait what
 
+      # Veto Hell
       elif (messageAge > timedelta(days=3)):
         thread = messageEntry.guild.get_channel_or_thread(messageEntry.id)
         role = get(messageEntry.guild.roles, id=int(798689768379908106))

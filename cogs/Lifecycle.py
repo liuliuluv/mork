@@ -15,7 +15,7 @@ import hc_constants
 from is_mork import is_mork
 from printCardImages import printCardImages
 from shared_vars import intents,cardSheet,allCards
-from test import postToReddit
+from reddit_functions import postToReddit
 
 ONE_HOUR = 3600
 
@@ -87,39 +87,19 @@ class LifecycleCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self,message:Message):
-        if (message.author.id == hc_constants.LLLLLL and "XX" in message.content):
-            print(message.content)
-            card=await cardNameRequest(message.content.replace("XX",""))
-            
-            url =  allCards[card].getImg()
-            print(url)
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url) as resp:
-                    if resp.status != 200:
-                        await message.reply('Something went wrong while getting the link for ' + card + '. Wait for @exalted to fix it.')
-                        return
-                    # currently extraFilename looks like inline;filename="                                Skald.png"
-                    extraFilename = resp.headers.get("Content-Disposition")  
-                    parsedFilename = re.findall('inline;filename="(.*)"', extraFilename)[0]
-                    data = await resp.read()
- 
-                    image_path=f'tempImages/{parsedFilename}'
-                    with open(image_path,'wb') as out: ## Open temporary file as bytes
-                        out.write(data)                ## Read bytes into file
+        # if (message.author.id == hc_constants.LLLLLL and "XX" in message.content):
+        #     copy=await message.attachments[0].to_file()
+        #     print(copy)
+        #     await postToReddit(file=copy,
+        #                title=f"{'X'} by {'Y'} was accepted!",
+        #                flair=hc_constants.ACCEPTED_FLAIR)
 
-                    await postToReddit(image_path, title=f'{card} was accepted')
-
-                    ## Do stuff with module/file
-                    os.remove(image_path) ## Delete file when done
-        #debug
-        return
         if (message.author == client.user
             or message.author.bot
             or message.author.id in bannedUserIds):
             return
-        #if message.channel.id == hc_constants.SUBMISSIONS_CHANNEL and len(message.attachments) > 0:
-        #  await message.add_reaction(hc_constants.VOTE_UP)
-        #  await message.add_reaction(hc_constants.VOTE_DOWN)
+        # #debug
+        return
         if message.channel.id == hc_constants.HELLS_UNO_CHANNEL:
             await message.add_reaction(hc_constants.VOTE_UP)
             await message.add_reaction(hc_constants.VOTE_DOWN)

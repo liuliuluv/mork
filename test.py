@@ -13,18 +13,6 @@ TEST_PHOTOS_ALBUM='AF1QipMRowgw87imsEaj-LMCn0iWWn5QlIXifYJqndzDykpO1E0wyTjvxsBCp
 nammappings=[]
 
 
-async def postToReddit(image_path:str, title:str):
-  reddit = asyncpraw.Reddit(
-      client_id=ID,
-      client_secret=SECRET,
-      password=PASSWORD,
-      user_agent=USER_AGENT,
-      username=NAME
-  )
-  # print(await reddit.user.me())
-  redditrequest = await reddit.subreddit('HellsCube')
-  await redditrequest.submit_image(title,image_path)
-
 
 # loop = asyncio.new_event_loop()
 # asyncio.set_event_loop(loop)

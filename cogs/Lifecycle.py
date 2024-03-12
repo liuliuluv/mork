@@ -57,10 +57,14 @@ class LifecycleCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(member):
+        # debug
+        return
         await member.send(f"Hey there! Welcome to HellsCube. Obligatory pointing towards <#{hc_constants.RULES_CHANNEL}>, <#{hc_constants.FAQ_CHANNEL}> and <#{hc_constants.RESOURCES_CHANNEL}>. Especially the explanation for all our channels and bot command to set your pronouns. Enjoy your stay!")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, reaction:RawReactionActionEvent):
+        #debug
+        return
         if str(reaction.emoji) == hc_constants.DENY and not is_mork(reaction.user_id):
             guild = self.bot.get_guild(reaction.guild_id)
             channel = guild.get_channel(reaction.channel_id)
@@ -96,6 +100,8 @@ class LifecycleCog(commands.Cog):
             or message.author.bot
             or message.author.id in bannedUserIds):
             return
+        if "{{" in message.content:
+            await print_card_images(message)
         # #debug
         return
         if message.channel.id == hc_constants.HELLS_UNO_CHANNEL:
@@ -131,8 +137,7 @@ class LifecycleCog(commands.Cog):
             await sentMessage.add_reaction(hc_constants.VOTE_DOWN)
             await sentMessage.add_reaction(hc_constants.DENY)
             await message.delete()
-        if "{{" in message.content:
-            await print_card_images(message)
+
         try:
             await self.bot.process_commands(message)
         except:

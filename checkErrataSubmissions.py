@@ -1,10 +1,10 @@
-from Mork import MyBot
+
 
 import hc_constants
 from datetime import datetime, timezone, timedelta
 from discord.utils import get
 
-async def checkErrataSubmissions(bot:MyBot):
+async def checkErrataSubmissions(bot):
   subChannel = bot.get_channel(hc_constants.FOUR_ZERO_ERRATA_SUBMISSIONS_CHANNEL)
   acceptedChannel = bot.get_channel(hc_constants.FOUR_ZERO_ERRATA_ACCEPTED_CHANNEL)
   timeNow = datetime.now(timezone.utc)

@@ -18,13 +18,13 @@ class MyBot(commands.Bot):
     async def setup_hook(self):
         print('This is asynchronous!')
         initial_extensions = [
-          'cogs.SpecificCards',
-        #  'cogs.Messages',
-          'cogs.Roles',
+     #     'cogs.SpecificCards',
+
+     #     'cogs.Roles',
           'cogs.Lifecycle',
-          'cogs.ZaxersKisses',
-          'cogs.Quotes',
-          'cogs.HellscubeDatabase'
+      #    'cogs.ZaxersKisses',
+      #    'cogs.Quotes',
+      #    'cogs.HellscubeDatabase'
           ]
         for i in initial_extensions:
             await self.load_extension(i)
@@ -102,6 +102,8 @@ log = ""
 
 @bot.command(name="dumplog")
 async def _dumplog(ctx:commands.Context):
+    # debug
+    return
     global log
     if ctx.author.id == hc_constants.LLLLLL:
         with open("log.txt", 'a', encoding='utf8') as file:
@@ -111,6 +113,8 @@ async def _dumplog(ctx:commands.Context):
 
 @bot.command()
 async def getMessage(ctx:commands.Context, id):
+        #debug
+        return
         subChannel = bot.get_channel(hc_constants.SUBMISSIONS_CHANNEL)
         message = await subChannel.fetch_message(id)
         await ctx.send(message.jump_url)
@@ -134,6 +138,8 @@ async def status_task():
 
 @bot.command()
 async def macro(ctx:commands.Context, thing:str, *args):
+        #debug
+        return
         if thing == "help":
                 message = "Macros are:\nJoke [word]\n"
                 for name in hc_constants.macroList.keys():
@@ -156,7 +162,9 @@ async def macro(ctx:commands.Context, thing:str, *args):
 
 
 @bot.command()
-async def gameNight(ctx:commands.Context, mode, game):
+async def gameNight(ctx:commands.Context, mode, game:str):
+        # debug
+        return
         #create, remove, get, lose, tag, list
         if mode == "create":
                 file = drive.CreateFile({'id':hc_constants.GAME_NIGHT_ROLES})
@@ -294,6 +302,8 @@ async def gameNight(ctx:commands.Context, mode, game):
 #for card-brazil and card-netherlands
 @bot.command()
 async def goodbye(ctx:commands.Context):
+        #debug
+        return
         if ctx.channel.id == hc_constants.MAYBE_BRAZIL_CHANNEL or ctx.channel.id == hc_constants.MAYBE_ONE_WORD_CHANNEL:
                 messages = ctx.channel.history(limit=500)
                 messages = [message async for message in messages]
@@ -324,12 +334,16 @@ async def BlueRed(ctx:commands.Context):
 
 @bot.command()
 async def menu(ctx:commands.Context):
+        #debug
+        return
         if ctx.channel.id == hc_constants.RESOURCES_CHANNEL or hc_constants.BOT_TEST_CHANNEL:
                 embed = discord.Embed(title="Resources Menu", description="[Channel Explanation](https://discord.com/channels/631288872814247966/803384271766683668/803384426360078336)\n[Command List](https://discord.com/channels/631288872814247966/803384271766683668/803389199503982632)\n[Achievements](https://discord.com/channels/631288872814247966/803384271766683668/803389622247882782)\n[Database](https://discord.com/channels/631288872814247966/803384271766683668/803390530145878057)\n[Release Notes](https://discord.com/channels/631288872814247966/803384271766683668/803390718801346610)\n[Cubecobras](https://discord.com/channels/631288872814247966/803384271766683668/803391239294025748)\n[Tabletop Simulator](https://discord.com/channels/631288872814247966/803384271766683668/803391314095636490)")
                 await ctx.send(embed)
 
 @bot.command()
 async def help(ctx:commands.Context):
+        #debug
+        return
         await ctx.send("https://discord.com/channels/631288872814247966/803384271766683668/803389199503982632")
 
 # TODO: is this used???
@@ -368,6 +382,8 @@ def vetoAnnouncementHelper(cardArray:list[discord.Message], announcement:list[st
 
 @bot.command()
 async def compileveto(ctx:commands.Context):
+        #debug
+        return
         if ctx.channel.id == hc_constants.VETO_DISCUSSION_CHANNEL:
                 vetoChannel = bot.get_channel(hc_constants.VETO_CHANNEL)
                 vetoDiscussionChannel = bot.get_channel(hc_constants.VETO_DISCUSSION_CHANNEL)
@@ -411,8 +427,8 @@ async def compileveto(ctx:commands.Context):
 
                         # Errata needed case
                         elif (errata > 4
-                                                and errata >= upvote
-                                                and errata >= downvote):
+                              and errata >= upvote
+                              and errata >= downvote):
                                 errataedCards.append(messageEntry)
                                 await messageEntry.add_reaction(hc_constants.ACCEPT)
                                 thread = messageEntry.guild.get_channel_or_thread(messageEntry.id)

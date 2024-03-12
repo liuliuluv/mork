@@ -1,4 +1,5 @@
 from Mork import MyBot
+
 import hc_constants
 from datetime import datetime, timezone, timedelta
 from discord.utils import get
@@ -21,10 +22,10 @@ async def checkErrataSubmissions(bot:MyBot):
     downvote = get(messages[i].reactions, emoji=hc_constants.VOTE_DOWN)
 
     if upvote and downvote:
-      upCount = upvote.count
+      up_count = upvote.count
       downCount = downvote.count
       messageAge = timeNow - messages[i].created_at
-      if (upCount - downCount) > 14 and messageAge >= timedelta(days=1):
+      if (up_count - downCount) > 14 and messageAge >= timedelta(days=1):
         acceptContent = messages[i].content
         await acceptedChannel.send(content=acceptContent)
         await messages[i].add_reaction(hc_constants.ACCEPT)

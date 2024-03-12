@@ -24,15 +24,14 @@ scope = [
     "https://www.googleapis.com/auth/drive"
     ]
 
-
 gauth = GoogleAuth()
 gauth.auth_method = 'service'
-creds = ServiceAccountCredentials.from_json_keyfile_name("secrets/client_secrets.json", scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name("secrets/client_secrets.json", scope) # type: ignore
 gauth.credentials=creds
 drive = GoogleDrive(gauth)
 about = drive.GetAbout()
 
-googleClient = gspread.authorize(creds)
+googleClient = gspread.authorize(creds) # type: ignore
 
 
 cardSheet = googleClient.open_by_key(hc_constants.HELLSCUBE_DATABASE).get_worksheet(0)

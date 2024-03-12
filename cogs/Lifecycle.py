@@ -12,7 +12,7 @@ from CardClasses import Card
 
 import hc_constants
 from is_mork import is_mork
-from printCardImages import printCardImages
+from printCardImages import print_card_images
 from shared_vars import intents,cardSheet,allCards
 
 ONE_HOUR = 3600
@@ -29,7 +29,7 @@ class LifecycleCog(commands.Cog):
     async def on_ready(self):
         global log
         print(f'{self.bot.user.name} has connected to Discord!')
-     
+
         nameList = cardSheet.col_values(1)[3:]
         imgList = cardSheet.col_values(2)[3:]
         creatorList = cardSheet.col_values(3)[3:]
@@ -132,7 +132,7 @@ class LifecycleCog(commands.Cog):
             await sentMessage.add_reaction(hc_constants.DENY)
             await message.delete()
         if "{{" in message.content:
-            await printCardImages(message)
+            await print_card_images(message)
         try:
             await self.bot.process_commands(message)
         except:

@@ -14,7 +14,7 @@ class QuotesCog(commands.Cog):
         self.bot = bot
         
     @commands.command()
-    async def quote(ctx:commands.Context, lookback=1):
+    async def quote(self, ctx:commands.Context, lookback=1):
         if lookback == 0:
             await ctx.send("^\nfucker")
             return
@@ -37,7 +37,7 @@ class QuotesCog(commands.Cog):
         await ctx.send("\"" + message.content + "\"\n-" + user)
 
     @commands.command()
-    async def randomquote(ctx:commands.Context, *user):
+    async def randomquote(self, ctx:commands.Context, *user):
         fileID = hc_constants.QUOTES_FILE
         file = drive.CreateFile({'id':fileID})
         quoteList = file.GetContentString().split(QUOTE_SPLIT)
@@ -59,7 +59,7 @@ class QuotesCog(commands.Cog):
         await ctx.send("\"" + message.replace("\\n", "\n") + "\"\n-" + user)
 
     @commands.command()
-    async def searchquote(ctx:commands.Context, text, *user):
+    async def searchquote(self, ctx:commands.Context, text, *user):
         fileID = hc_constants.QUOTES_FILE
         file = drive.CreateFile({'id':fileID})
         quoteList = file.GetContentString().split(QUOTE_SPLIT)
@@ -101,14 +101,14 @@ async def setup(bot:commands.Bot):
 
 
 async def addToDrive(message, user, fileID):
-  text = ";%;%;"
-  text += message
-  text += authorSplit
-  text += user
-  file = drive.CreateFile({'id':fileID})
-  update = file.GetContentString() + text
-  file.SetContentString(update)
-  file.Upload()
+    text = ";%;%;"
+    text += message
+    text += authorSplit
+    text += user
+    file = drive.CreateFile({'id':fileID})
+    update = file.GetContentString() + text
+    file.SetContentString(update)
+    file.Upload()
 
 async def createQuoteMenu(ctx:commands.Context, quoteList):
   pageList = []

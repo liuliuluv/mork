@@ -7,7 +7,7 @@ from datetime import datetime, timezone, timedelta
 from CardClasses import Side, cardSearch
 from cardNameRequest import cardNameRequest
 import hc_constants
-from sendImage import sendImage
+from sendImage import send_image
 
 
 from shared_vars import intents,allCards,googleClient
@@ -118,7 +118,7 @@ class HellscubeDatabaseCog(commands.Cog):
     async def randomCard(self,channel):
         print(allCards)
         card = allCards[random.choice(list(allCards.keys()))]
-        await sendImage(card.getImg(), card.getName(), channel)
+        await send_image(card.getImg(), card.getName(), channel)
 
     @commands.command()
     async def creator(self, channel, *cardName):

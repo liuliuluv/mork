@@ -94,203 +94,27 @@ async def checkSubmissions():
 
 
 
-FIVE_MINUTES=300
-
-async def status_task():
-        # debug
-        print('status_task loop')
-        return
-        while True:
-                creator = random.choice(cardSheet.col_values(3)[4:])
-                action = random.choice(hc_constants.statusList)
-                status = action.replace("@creator", creator)
-                print(status)
-                await checkSubmissions()
-                await checkErrataSubmissions()
-                await bot.change_presence(status=discord.Status.online, activity=discord.Game(status))
-                await asyncio.sleep(FIVE_MINUTES)
-
-
-
-
-
-@bot.command()
-async def gameNight(ctx:commands.Context, mode, game:str):
-        # debug
-        return
-        #create, remove, get, lose, tag, list
-        if mode == "create":
-                file = drive.CreateFile({'id':hc_constants.GAME_NIGHT_ROLES})
-                output = file.GetContentString()
-                if not game.lower() in output.replace('\r','').split("\n"):
-                        output = output + game.lower() + "\n"
-                        file.SetContentString(output)
-                        file.Upload()
-                        await ctx.send("Created game \"" + game.lower() + "\"")
-                else:
-                        await ctx.send("This game already exist.")
-        if mode == "list":
-                output = drive.CreateFile({'id':hc_constants.GAME_NIGHT_ROLES}).GetContentString()
-                await ctx.send(output)
-        if mode == "amount":
-                games = drive.CreateFile({'id':hc_constants.GAME_NIGHT_ROLES}).GetContentString().replace('\r','').split("\n")
-                amount = []
-                users = drive.CreateFile({'id':hc_constants.GAME_NIGHT_PEOPLE}).GetContentString().replace('\r','').split("\n")
-                for x in range(len(games)):
-                        amount.append(0)
-                        for i in users:
-                                if "$%$%$" in i:
-                                        if i.split("$%$%$")[1] == games[x].lower():
-                                                amount[x] += 1
-                result = "Amount of users per game:\n"
-                for i in range(len(amount)):
-                        result += f"{games[i]: {str(amount[i])}}\n"
-                await ctx.send(result)
-        if mode == "remove":
-                role = get(ctx.message.author.guild.roles, id=int(631288945044357141))
-                if role in ctx.author.roles:
-                        file1 = drive.CreateFile({'id':hc_constants.GAME_NIGHT_ROLES})
-                        gnRoles = file1.GetContentString()
-                        if game.lower() in gnRoles.replace('\r','').split("\n"):
-                                file2 = drive.CreateFile({'id':hc_constants.GAME_NIGHT_PEOPLE})
-                                gnPeople = file2.GetContentString()
-                                options = gnPeople.replace('\r','').split("\n")
-                                for i in options:
-                                        if "$%$%$" in i:
-                                                if i.split("$%$%$")[1] == game.lower():
-                                                        options.remove(i)
-                                update = "\n".join(options)
-                                file2.SetContentString(update)
-                                file2.Upload()
-                                await ctx.send("Removed role \"" + game.lower() + "\" from everyone")
-                                options = gnRoles.replace('\r','').split("\n")
-                                for i in options:
-                                        if i == game.lower():
-                                                options.remove(i)
-                                update = "\n".join(options)
-                                file1.SetContentString(update)
-                                file1.Upload()
-                                await ctx.send("Removed role \"" + game.lower() + "\" from existence")
-                        else:
-                                await ctx.send("This game doesn't exist.")
-                else:
-                        await ctx.send("Removing games is only available to mods, probably tag one of them if you need the game removed.")
-        if mode == "get":
-                if game.lower() in drive.CreateFile({'id':hc_constants.GAME_NIGHT_ROLES}).GetContentString().replace('\r','').split("\n"):
-                        file = drive.CreateFile({'id':hc_constants.GAME_NIGHT_PEOPLE})
-                        gnPeople = file.GetContentString()
-                        gnPeople = gnPeople + (str(ctx.author.id)) + "$%$%$" + game.lower() + "\n"
-                        file.SetContentString(gnPeople)
-                        file.Upload()
-                        await ctx.send("Gave you game role for game \"" + game.lower() + "\"")
-                else:
-                        await ctx.send("This game doesn't exist.")
-        if mode == "lose":
-                if game.lower() in drive.CreateFile({'id':hc_constants.GAME_NIGHT_ROLES}).GetContentString().replace('\r','').split("\n"):
-                        file = drive.CreateFile({'id':hc_constants.GAME_NIGHT_PEOPLE})
-                        gnPeople = file.GetContentString()
-                        options = gnPeople.replace('\r','').split("\n")
-                        for i in options:
-                                if "$%$%$" in i:
-                                        if i.split("$%$%$")[1] == game.lower() and int(i.split("$%$%$")[0]) == ctx.author.id:
-                                                options.remove(i)
-                                                update = "\n".join(options)
-                                                file.SetContentString(update)
-                                                file.Upload()
-                                                await ctx.send("Removed role \"" + game.lower() + "\" from you")
-                else:
-                        await ctx.send("This game doesn't exist.")
-        if mode == "tag":
-                if game.lower() in drive.CreateFile({'id':hc_constants.GAME_NIGHT_ROLES}).GetContentString().replace('\r','').split("\n"):
-                        options = drive.CreateFile({'id':hc_constants.GAME_NIGHT_PEOPLE}).GetContentString().replace('\r','').split("\n")
-                        userIds = []
-                        for i in options:
-                                if "$%$%$" in i:
-                                        if i.split("$%$%$")[1] == game.lower():
-                                                userIds.append(i.split("$%$%$")[0])
-                        result = "Wanna play a game of " + game.lower() + "\n"
-                        for i in userIds:
-                                result += "<@" + i + ">\n"
-                        await ctx.send(result)
-                else:
-                        await ctx.send("This game doesn't exist.")
-        if mode == "who":
-                if game.lower() in drive.CreateFile({'id':hc_constants.GAME_NIGHT_ROLES}).GetContentString().replace('\r','').split("\n"):
-                        options = drive.CreateFile({'id':hc_constants.GAME_NIGHT_PEOPLE}).GetContentString().replace('\r','').split("\n")
-                        userIds = []
-                        for i in options:
-                                if "$%$%$" in i:
-                                        if i.split("$%$%$")[1] == game.lower():
-                                                userIds.append(i.split("$%$%$")[0])
-                        result = "All people who play " + game.lower() + " are:\n"
-                        for i in userIds:
-                                try:
-                                        g = await bot.fetch_user(i)
-                                        result += g.name + "\n"
-                                except:
-                                        ...
-                        await ctx.send(result)
-                else:
-                        await ctx.send("This game doesn't exist.")
-        if mode == "search":
-                options = drive.CreateFile({'id':hc_constants.GAME_NIGHT_PEOPLE}).GetContentString().replace('\r','').split("\n")
-                userGames = []
-                for i in options:
-                        if "$%$%$" in i:
-                                try:
-                                        user = await bot.fetch_user(int(i.split("$%$%$")[0]))
-                                        print(game.lower(), user.name)
-                                        if game.lower() in user.name.lower():
-                                                userGames.append(i.split("$%$%$")[1])
-                                except:
-                                        ...
-                result = "User " + game.lower() + " has roles for the following games\n"
-                for i in userGames:
-                        result += i + "\n"
-                if len(userGames) > 0:
-                        await ctx.send(result)
-                else:
-                        await ctx.send("User has no game roles")
-
-#for card-brazil and card-netherlands
-@bot.command()
-async def goodbye(ctx:commands.Context):
-        #debug
-        return
-        if ctx.channel.id == hc_constants.MAYBE_BRAZIL_CHANNEL or ctx.channel.id == hc_constants.MAYBE_ONE_WORD_CHANNEL:
-                messages = ctx.channel.history(limit=500)
-                messages = [message async for message in messages]
-                card = ""
-                for i in range(1, len(messages)):
-                        if messages[i].content.lower().startswith("start"):
-                                break
-                        if messages[i].content != "":
-                                if messages[i].content[0] != "(":
-                                        card = messages[i].content + " " + card
-                card = card.replace("/n", "\n")
-                cubeChannel = bot.get_channel(hc_constants.CUBE_CHANNEL)
-                await cubeChannel.send(card)
-                await ctx.channel.send(card)
+   
 
 def vetoAnnouncementHelper(cardArray:list[discord.Message], announcement:list[str], annIndex:int):
-        for i in cardArray:
-                thisLine = i.content
-                if len(announcement[annIndex]) + len(thisLine) > 1950:
-                        announcement.append("")
-                        annIndex += 1
-                if (len(i.content)) == 0:
-                        announcement[annIndex] += "**Crazy card with no name and no author**\n"
-                elif (i.content[0:3] == "by "):
-                        announcement[annIndex] += f"**Silly card with no name** {i.content}\n"
+    for i in cardArray:
+        thisLine = i.content
+        if len(announcement[annIndex]) + len(thisLine) > 1950:
+            announcement.append("")
+            annIndex += 1
+        if (len(i.content)) == 0:
+            announcement[annIndex] += "**Crazy card with no name and no author**\n"
+        elif (i.content[0:3] == "by "):
+            announcement[annIndex] += f"**Silly card with no name** {i.content}\n"
+        else:
+            thisLine = thisLine.split(" by ")
+            for i in range(len(thisLine)):
+                if i == 0:
+                    announcement[annIndex] += "**" + thisLine[0] + "**"
                 else:
-                        thisLine = thisLine.split(" by ")
-                        for i in range(len(thisLine)):
-                                if i == 0:
-                                        announcement[annIndex] += "**" + thisLine[0] + "**"
-                                else:
-                                        announcement[annIndex] += " by " + thisLine[i]
-                        announcement[annIndex] += "\n"
-        return annIndex
+                    announcement[annIndex] += " by " + thisLine[i]
+            announcement[annIndex] += "\n"
+    return annIndex
 
 @bot.command()
 async def compileveto(ctx:commands.Context):

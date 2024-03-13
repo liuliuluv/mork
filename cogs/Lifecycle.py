@@ -1,16 +1,14 @@
 import asyncio
 from datetime import datetime
-import io
-import os
-import re
-import aiohttp
+import random
 from discord import  RawReactionActionEvent
 import discord
 from discord.ext import commands
 from discord.message import Message
 from discord.utils import get
 from CardClasses import Card
-from Mork import status_task
+from Mork import checkSubmissions
+from checkErrataSubmissions import checkErrataSubmissions
 
 import hc_constants
 from is_mork import is_mork
@@ -38,7 +36,7 @@ class LifecycleCog(commands.Cog):
         global allCards # Need to modify shared allCards object
         for i in range(len(nameList)):
             allCards[nameList[i].lower()] = Card(nameList[i], imgList[i], creatorList[i])
-        self.bot.loop.create_task(status_task())
+        self.bot.loop.create_task(status_task(self.bot))
         while True:
             await asyncio.sleep(ONE_HOUR)
             with open("log.txt", 'a', encoding='utf8') as file:
@@ -134,3 +132,18 @@ class LifecycleCog(commands.Cog):
 
 async def setup(bot:commands.Bot):
     await bot.add_cog(LifecycleCog(bot))
+
+
+
+FIVE_MINUTES=300
+
+async def status_task(bot:commands.Bot):
+    while True:
+        creator = random.choice(cardSheet.col_values(3)[4:])
+        action = random.choice(hc_constants.statusList)
+        status = action.replace("@creator", creator)
+        print(status)
+        await checkSubmissions()
+        await checkErrataSubmissions()
+        await bot.change_presence(status=discord.Status.online, activity=discord.Game(status))
+        await asyncio.sleep(FIVE_MINUTES)

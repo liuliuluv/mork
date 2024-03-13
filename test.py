@@ -6,13 +6,13 @@ import asyncpraw
 import asyncio
 from secrets.reddit_secrets import ID,SECRET,PASSWORD,USER_AGENT,NAME
 
-from shared_vars import drive,googleClient
+# from shared_vars import drive,googleClient
 
 
 nammappings=[]
 
 
-print([].__len__())
+print("e" not in ["a"])
 
 
 

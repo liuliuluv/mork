@@ -1,15 +1,15 @@
-import discord
+
 from discord.ext import commands
 from discord.utils import get
 import pprint as pp
 
 
 class RolesCog(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self, bot:commands.Bot):
+        self.bot:commands.Bot = bot
 
     @commands.command()
-    async def announcements(self, ctx):
+    async def announcements(self, ctx:commands.Context):
         role = get(ctx.message.author.guild.roles, id=int(862806291844300830))
         if role in ctx.author.roles:
             await ctx.author.remove_roles(role)
@@ -19,7 +19,7 @@ class RolesCog(commands.Cog):
         await ctx.send("Gave " + str(ctx.message.author) + " Announcements")
 
     @commands.command()
-    async def vent(self, ctx):
+    async def vent(self, ctx:commands.Context):
         role = get(ctx.message.author.guild.roles, id=int(1003397744267898920))
         if role in ctx.author.roles:
             await ctx.author.remove_roles(role)
@@ -29,7 +29,7 @@ class RolesCog(commands.Cog):
         await ctx.send("Gave " + str(ctx.message.author) + " Vent")
 
     @commands.command()
-    async def becomeArtist(self, ctx):
+    async def becomeArtist(self, ctx:commands.Context):
         role = get(ctx.message.author.guild.roles, id=int(819320922666041355))
         if role in ctx.author.roles:
             await ctx.author.remove_roles(role)
@@ -39,7 +39,7 @@ class RolesCog(commands.Cog):
         await ctx.send("Gave " + str(ctx.message.author) + " HCArtist")
 
     @commands.command()
-    async def wantToDraft(self, ctx):
+    async def wantToDraft(self, ctx:commands.Context):
         role = get(ctx.message.author.guild.roles, id=int(661721357066698762))
         if role in ctx.author.roles:
             await ctx.author.remove_roles(role)
@@ -49,7 +49,7 @@ class RolesCog(commands.Cog):
         await ctx.send("Gave " + str(ctx.message.author) + " WantToDraft")
 
     @commands.command()
-    async def wantToEdh(self, ctx):
+    async def wantToEdh(self, ctx:commands.Context):
         role = get(ctx.message.author.guild.roles, id=int(720043670870425691))
         if role in ctx.author.roles:
             await ctx.author.remove_roles(role)
@@ -59,7 +59,7 @@ class RolesCog(commands.Cog):
         await ctx.send("Gave " + str(ctx.message.author) + " WantToEdh")
 
     @commands.command()
-    async def wantToJumpstart(self, ctx):
+    async def wantToJumpstart(self, ctx:commands.Context):
         role = get(ctx.message.author.guild.roles, id=int(733995427237724180))
         if role in ctx.author.roles:
             await ctx.author.remove_roles(role)
@@ -69,7 +69,7 @@ class RolesCog(commands.Cog):
         await ctx.send("Gave " + str(ctx.message.author) + " WantToJumpstart")
 
     @commands.command()
-    async def wantToConstructed(self, ctx):
+    async def wantToConstructed(self, ctx:commands.Context):
         role = get(ctx.message.author.guild.roles, id=int(856927890120769576))
         if role in ctx.author.roles:
             await ctx.author.remove_roles(role)
@@ -79,7 +79,7 @@ class RolesCog(commands.Cog):
         await ctx.send("Gave " + str(ctx.message.author) + " WantToConstructed")
 
     @commands.command()
-    async def wantToLeaks(self, ctx):
+    async def wantToLeaks(self, ctx:commands.Context):
         role = get(ctx.message.author.guild.roles, id=int(794254398775361578))
         if role in ctx.author.roles:
             await ctx.author.remove_roles(role)
@@ -89,7 +89,7 @@ class RolesCog(commands.Cog):
         await ctx.send("Gave " + str(ctx.message.author) + " WantToLeaks")
 
     @commands.command()
-    async def popcornCube(self, ctx):
+    async def popcornCube(self, ctx:commands.Context):
         role = get(ctx.message.author.guild.roles, id=int(758033490133385308))
         if role in ctx.author.roles:
             await ctx.author.remove_roles(role)
@@ -99,7 +99,7 @@ class RolesCog(commands.Cog):
         await ctx.send("Gave " + str(ctx.message.author) + " PopcornCube")
 
     @commands.command()
-    async def pronoun(self, ctx, roleName):
+    async def pronoun(self, ctx:commands.Context, roleName):
         roleId = {
             "he": 745661999513469069,
             "she": 745662055842840718,
@@ -142,5 +142,5 @@ class RolesCog(commands.Cog):
             "This is not currently a pronoun role, make sure to type !pronoun and then only the subjective pronoun (Example !pronoun they), If your pronouns are missing please tag Exalted")
 
 
-async def setup(bot):
+async def setup(bot:commands.Bot):
     await bot.add_cog(RolesCog(bot))

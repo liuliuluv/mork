@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 import io
 import os
 import re
@@ -9,6 +10,7 @@ from discord.ext import commands
 from discord.message import Message
 from discord.utils import get
 from CardClasses import Card
+from Mork import status_task
 
 import hc_constants
 from is_mork import is_mork
@@ -36,8 +38,6 @@ class LifecycleCog(commands.Cog):
         global allCards # Need to modify shared allCards object
         for i in range(len(nameList)):
             allCards[nameList[i].lower()] = Card(nameList[i], imgList[i], creatorList[i])
-        # debug 
-        return
         self.bot.loop.create_task(status_task())
         while True:
             await asyncio.sleep(ONE_HOUR)
@@ -47,8 +47,6 @@ class LifecycleCog(commands.Cog):
         
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload:RawReactionActionEvent):
-        # debug
-        return
         global log
         if payload.channel_id == hc_constants.SUBMISSIONS_CHANNEL:
             serv = self.bot.get_guild(hc_constants.SERVER_ID)
@@ -57,14 +55,10 @@ class LifecycleCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(member):
-        # debug
-        return
         await member.send(f"Hey there! Welcome to HellsCube. Obligatory pointing towards <#{hc_constants.RULES_CHANNEL}>, <#{hc_constants.FAQ_CHANNEL}> and <#{hc_constants.RESOURCES_CHANNEL}>. Especially the explanation for all our channels and bot command to set your pronouns. Enjoy your stay!")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, reaction:RawReactionActionEvent):
-        #debug
-        return
         if str(reaction.emoji) == hc_constants.DENY and not is_mork(reaction.user_id):
             guild = self.bot.get_guild(reaction.guild_id)
             channel = guild.get_channel(reaction.channel_id)
@@ -102,8 +96,6 @@ class LifecycleCog(commands.Cog):
             return
         if "{{" in message.content:
             await print_card_images(message)
-        # #debug
-        return
         if message.channel.id == hc_constants.HELLS_UNO_CHANNEL:
             await message.add_reaction(hc_constants.VOTE_UP)
             await message.add_reaction(hc_constants.VOTE_DOWN)
@@ -118,9 +110,6 @@ class LifecycleCog(commands.Cog):
             thread = await message.create_thread(name=message.content)
             role = get(message.author.guild.roles, id==hc_constants.VETO_COUNCIL_MAYBE)
             await thread.send(role.mention)
-        ##    for user in role.members:
-        ##        await thread.add_user(user)
-        ##        await asyncio.sleep(1)
         if message.channel.id == hc_constants.FOUR_ZERO_ERRATA_SUBMISSIONS_CHANNEL:
             if "@" in message.content:
                 return

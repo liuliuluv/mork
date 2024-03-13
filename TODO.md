@@ -12,7 +12,13 @@
 - "cirionfuckingdies" : "||https://cdn.discordapp.com/attachments/640360977929338918/769952902998523934/ProsLeg.png|| ~~Warning Gore ||not really||~~",
 
 
-- All of specific cards
+- Fix token links
+- Add people to drive folder
+- finish owl
+- documentation/readme
+- secret enhancement
+- not secret enhancements
+
 
 
 - stormstorm images are borked

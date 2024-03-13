@@ -4,7 +4,6 @@ from discord.ext import commands
 import asyncio
 import random
 import gspread
-import pprint as pp
 from datetime import datetime, timezone, timedelta
 from reddit_functions import postToReddit
 from checkErrataSubmissions import checkErrataSubmissions
@@ -19,12 +18,12 @@ class MyBot(commands.Bot):
         print('This is asynchronous!')
         initial_extensions = [
      #     'cogs.SpecificCards',
-
      #     'cogs.Roles',
           'cogs.Lifecycle',
       #    'cogs.ZaxersKisses',
       #    'cogs.Quotes',
       #    'cogs.HellscubeDatabase'
+      #     'cogs.General
           ]
         for i in initial_extensions:
             await self.load_extension(i)
@@ -48,9 +47,6 @@ async def check_cogs(ctx:commands.Context, cog_name):
 
 cardSheetUnapproved = googleClient.open_by_key(hc_constants.HELLSCUBE_DATABASE).get_worksheet(1)
 
-
-global blueRed
-blueRed = False
 
 async def checkSubmissions():
     subChannel = bot.get_channel(hc_constants.SUBMISSIONS_CHANNEL)
@@ -98,28 +94,6 @@ async def checkSubmissions():
 
 
 
-log = ""
-
-@bot.command(name="dumplog")
-async def _dumplog(ctx:commands.Context):
-    # debug
-    return
-    global log
-    if ctx.author.id == hc_constants.LLLLLL:
-        with open("log.txt", 'a', encoding='utf8') as file:
-            file.write(log)
-            log = ""
-            print("log dumped")
-
-@bot.command()
-async def getMessage(ctx:commands.Context, id):
-        #debug
-        return
-        subChannel = bot.get_channel(hc_constants.SUBMISSIONS_CHANNEL)
-        message = await subChannel.fetch_message(id)
-        await ctx.send(message.jump_url)
-
-
 FIVE_MINUTES=300
 
 async def status_task():
@@ -136,27 +110,6 @@ async def status_task():
                 await bot.change_presence(status=discord.Status.online, activity=discord.Game(status))
                 await asyncio.sleep(FIVE_MINUTES)
 
-@bot.command()
-async def macro(ctx:commands.Context, thing:str, *args):
-        #debug
-        return
-        if thing == "help":
-                message = "Macros are:\nJoke [word]\n"
-                for name in hc_constants.macroList.keys():
-                        if type(hc_constants.macroList[name]) is str:
-                                message += f"{name}\n"
-                        else:
-                                message += f"{name}\n"
-                                for subname in hc_constants.macroList[name]:
-                                        message += f"                {subname}\n"
-                await ctx.send(message)
-                return
-        if thing.lower() in hc_constants.macroList.keys():
-                if type(hc_constants.macroList[thing.lower()]) is str:
-                        await ctx.send(hc_constants.macroList[thing.lower()].replace("@arg", " ".join(args)))
-                else:
-                        pp.pprint(hc_constants.macroList[thing.lower()])
-                        await ctx.send(hc_constants.macroList[thing.lower()][args[0].lower()])
 
 
 
@@ -318,47 +271,6 @@ async def goodbye(ctx:commands.Context):
                 cubeChannel = bot.get_channel(hc_constants.CUBE_CHANNEL)
                 await cubeChannel.send(card)
                 await ctx.channel.send(card)
-
-@bot.command()
-async def BlueRed(ctx:commands.Context):
-        if ctx.author.id == hc_constants.CIRION:
-                global BlueRed
-                if BlueRed:
-                        BlueRed = False
-                        await ctx.send("Turned Off")
-                else:
-                        BlueRed = True
-                        await ctx.send("Turned On")
-        else:
-                await ctx.send("cirion Only Command")
-
-@bot.command()
-async def menu(ctx:commands.Context):
-        #debug
-        return
-        if ctx.channel.id == hc_constants.RESOURCES_CHANNEL or hc_constants.BOT_TEST_CHANNEL:
-                embed = discord.Embed(title="Resources Menu", description="[Channel Explanation](https://discord.com/channels/631288872814247966/803384271766683668/803384426360078336)\n[Command List](https://discord.com/channels/631288872814247966/803384271766683668/803389199503982632)\n[Achievements](https://discord.com/channels/631288872814247966/803384271766683668/803389622247882782)\n[Database](https://discord.com/channels/631288872814247966/803384271766683668/803390530145878057)\n[Release Notes](https://discord.com/channels/631288872814247966/803384271766683668/803390718801346610)\n[Cubecobras](https://discord.com/channels/631288872814247966/803384271766683668/803391239294025748)\n[Tabletop Simulator](https://discord.com/channels/631288872814247966/803384271766683668/803391314095636490)")
-                await ctx.send(embed)
-
-@bot.command()
-async def help(ctx:commands.Context):
-        #debug
-        return
-        await ctx.send("https://discord.com/channels/631288872814247966/803384271766683668/803389199503982632")
-
-# TODO: is this used???
-#@bot.command()
-#async def removeallchecks(ctx):
-#        timeNow = datetime.now(timezone.utc)
-#        timeNow = timeNow.replace(tzinfo=None)
-#        duration = timeNow + timedelta(days=-30)
-#        await ctx.send("Working on it. This may take a bit.")
-#        if ctx.channel.id == hc_constants.VETO_DISCUSSION_CHANNEL:
-#                messages = bot.get_channel(hc_constants.VETO_CHANNEL).history(after=duration, limit=None)
-#                messages = await messages.flatten()
-#                for i in range(len(messages)):
-#                        await messages[i].remove_reaction(hc_constants.ACCEPT, bot.get_user(hc_constants.MORK))
-#                await ctx.send("removed all my recent ✅ from #veto-polls")
 
 def vetoAnnouncementHelper(cardArray:list[discord.Message], announcement:list[str], annIndex:int):
         for i in cardArray:

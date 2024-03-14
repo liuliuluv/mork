@@ -1,14 +1,15 @@
 import asyncio
 from datetime import datetime
 import random
-from discord import  RawReactionActionEvent
+from discord import  RawReactionActionEvent, Role
 import discord
 from discord.ext import commands
 from discord.message import Message
 from discord.utils import get
 from CardClasses import Card
-from Mork import checkSubmissions
+
 from checkErrataSubmissions import checkErrataSubmissions
+from checkSubmissions import checkSubmissions
 
 import hc_constants
 from is_mork import is_mork
@@ -57,7 +58,7 @@ class LifecycleCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, reaction:RawReactionActionEvent):
-        if str(reaction.emoji) == hc_constants.DENY and not is_mork(reaction.user_id):
+        if str(reaction.emoji) == hc_constants.DELETE and not is_mork(reaction.user_id):
             guild = self.bot.get_guild(reaction.guild_id)
             channel = guild.get_channel(reaction.channel_id)
             message = await channel.fetch_message(reaction.message_id)
@@ -81,13 +82,6 @@ class LifecycleCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self,message:Message):
-        # if (message.author.id == hc_constants.LLLLLL and "XX" in message.content):
-        #     copy=await message.attachments[0].to_file()
-        #     print(copy)
-        #     await postToReddit(file=copy,
-        #                title=f"{'X'} by {'Y'} was accepted!",
-        #                flair=hc_constants.ACCEPTED_FLAIR)
-
         if (message.author == client.user
             or message.author.bot
             or message.author.id in bannedUserIds):
@@ -106,29 +100,30 @@ class LifecycleCog(commands.Cog):
             await message.add_reaction("🤮")
             await message.add_reaction("🤔")
             thread = await message.create_thread(name=message.content)
-            role = get(message.author.guild.roles, id==hc_constants.VETO_COUNCIL_MAYBE)
+            role:Role = get(message.author.guild.roles, id==hc_constants.VETO_COUNCIL_MAYBE)
             await thread.send(role.mention)
         if message.channel.id == hc_constants.FOUR_ZERO_ERRATA_SUBMISSIONS_CHANNEL:
             if "@" in message.content:
-                return
+                # No ping case
+                user = await self.bot.fetch_user(message.author.id)
+                await user.send('No "@" are allowed in card title submissions to prevent me from spamming')
+                return # no pings allowed
             sentMessage = await message.channel.send(content = message.content)
             await sentMessage.add_reaction(hc_constants.VOTE_UP)
             await sentMessage.add_reaction(hc_constants.VOTE_DOWN)
             await message.delete()
         if message.channel.id == hc_constants.SUBMISSIONS_CHANNEL and len(message.attachments) > 0:
             if "@" in message.content:
-                return # I'm confused what this case is, it might be the non-bot case, but who knows
+                # No ping case
+                user = await self.bot.fetch_user(message.author.id)
+                await user.send('No "@" are allowed in card title submissions to prevent me from spamming')
+                return # no pings allowed
             file = await message.attachments[0].to_file()
-            sentMessage = await message.channel.send(content = message.content + " by " + message.author.mention, file = file)
+            sentMessage = await message.channel.send(content = f"{message.content} by {message.author.mention}" , file = file)
             await sentMessage.add_reaction(hc_constants.VOTE_UP)
             await sentMessage.add_reaction(hc_constants.VOTE_DOWN)
-            await sentMessage.add_reaction(hc_constants.DENY)
+            await sentMessage.add_reaction(hc_constants.DELETE)
             await message.delete()
-
-        try:
-            await self.bot.process_commands(message)
-        except:
-            ...
 
 async def setup(bot:commands.Bot):
     await bot.add_cog(LifecycleCog(bot))
@@ -143,7 +138,7 @@ async def status_task(bot:commands.Bot):
         action = random.choice(hc_constants.statusList)
         status = action.replace("@creator", creator)
         print(status)
-        await checkSubmissions()
-        await checkErrataSubmissions()
+        await checkSubmissions(bot)
+        await checkErrataSubmissions(bot)
         await bot.change_presence(status=discord.Status.online, activity=discord.Game(status))
         await asyncio.sleep(FIVE_MINUTES)

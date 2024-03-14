@@ -1,19 +1,31 @@
 
 from googleapiclient.discovery import build
-from google.oauth2 import service_account
-from threading import Timer
-import asyncpraw
-import asyncio
+# from google.oauth2 import service_account
+# from threading import Timer
+# import asyncpraw
+# import asyncio
+# import hc_constants
 from secrets.reddit_secrets import ID,SECRET,PASSWORD,USER_AGENT,NAME
 
-# from shared_vars import drive,googleClient
+# from shared_vars import drive
 
 
 nammappings=[]
 
 
+print('\n\nACCEPTED CARDS: \n{0}'.format("\n".join(["a","b"])))
+
 print("e" not in ["a"])
 
+print(f"{ 't'.join(['a','s'])}")
+
+for i in range(5):
+    if i==2:
+        continue
+    print(i)
+
+
+# https://lh3.googleusercontent.com/d/1hOyWsWgYq2OYjY8GGWWjEJnXLb17iacX
 
 
 # loop = asyncio.new_event_loop()

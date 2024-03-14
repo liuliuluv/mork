@@ -10,6 +10,7 @@ global blueRed
 blueRed = False
 log = ""
 
+custom_deliminator="$%$%$"
 
 class GeneralCog(commands.Cog):
     def __init__(self, bot:commands.Bot):
@@ -102,12 +103,12 @@ class GeneralCog(commands.Cog):
             options = drive.CreateFile({'id':hc_constants.GAME_NIGHT_PEOPLE}).GetContentString().replace('\r','').split("\n")
             userGames = []
             for i in options:
-                if "$%$%$" in i:
+                if custom_deliminator in i:
                     try:
-                        user = await self.bot.fetch_user(int(i.split("$%$%$")[0]))
+                        user = await self.bot.fetch_user(int(i.split(custom_deliminator)[0]))
                         print(game.lower(), user.name)
                         if game.lower() in user.name.lower():
-                            userGames.append(i.split("$%$%$")[1])
+                            userGames.append(i.split(custom_deliminator)[1])
                     except:
                         ...
             result = "User " + game.lower() + " has roles for the following games\n"
@@ -123,6 +124,7 @@ class GeneralCog(commands.Cog):
 
         if mode == "list":
             await ctx.send(role_file_content)
+            return
 
         games = role_file_content.replace('\r','').split("\n")
         
@@ -141,8 +143,8 @@ class GeneralCog(commands.Cog):
             for x in range(len(games)):
                 amount.append(0)
                 for i in users:
-                    if "$%$%$" in i:
-                        if i.split("$%$%$")[1] == games[x].lower():
+                    if custom_deliminator in i:
+                        if i.split(custom_deliminator)[1] == games[x].lower():
                             amount[x] += 1
             result = "Amount of users per game:\n"
             for i in range(len(amount)):
@@ -156,8 +158,8 @@ class GeneralCog(commands.Cog):
                     gnPeople = file2.GetContentString()
                     options = gnPeople.replace('\r','').split("\n")
                     for i in options:
-                        if "$%$%$" in i:
-                            if i.split("$%$%$")[1] == game.lower():
+                        if custom_deliminator in i:
+                            if i.split(custom_deliminator)[1] == game.lower():
                                 options.remove(i)
                     update = "\n".join(options)
                     file2.SetContentString(update)
@@ -179,7 +181,7 @@ class GeneralCog(commands.Cog):
             if game.lower() in games:
                 file = drive.CreateFile({'id':hc_constants.GAME_NIGHT_PEOPLE})
                 gnPeople = file.GetContentString()
-                gnPeople = gnPeople + str(ctx.author.id) + "$%$%$" + game.lower() + "\n"
+                gnPeople = gnPeople + str(ctx.author.id) + custom_deliminator + game.lower() + "\n"
                 file.SetContentString(gnPeople)
                 file.Upload()
                 await ctx.send("Gave you game role for game \"" + game.lower() + "\"")
@@ -191,8 +193,8 @@ class GeneralCog(commands.Cog):
                 gnPeople = file.GetContentString()
                 options = gnPeople.replace('\r','').split("\n")
                 for i in options:
-                    if "$%$%$" in i:
-                        if i.split("$%$%$")[1] == game.lower() and int(i.split("$%$%$")[0]) == ctx.author.id:
+                    if custom_deliminator in i:
+                        if i.split(custom_deliminator)[1] == game.lower() and int(i.split(custom_deliminator)[0]) == ctx.author.id:
                             options.remove(i)
                             update = "\n".join(options)
                             file.SetContentString(update)
@@ -205,9 +207,9 @@ class GeneralCog(commands.Cog):
                 options = drive.CreateFile({'id':hc_constants.GAME_NIGHT_PEOPLE}).GetContentString().replace('\r','').split("\n")
                 userIds = []
                 for i in options:
-                    if "$%$%$" in i:
-                        if i.split("$%$%$")[1] == game.lower():
-                            userIds.append(i.split("$%$%$")[0])
+                    if custom_deliminator in i:
+                        if i.split(custom_deliminator)[1] == game.lower():
+                            userIds.append(i.split(custom_deliminator)[0])
                 result = "Wanna play a game of " + game.lower() + "\n"
                 for i in userIds:
                     result += "<@" + i + ">\n"
@@ -219,9 +221,9 @@ class GeneralCog(commands.Cog):
                 options = drive.CreateFile({'id':hc_constants.GAME_NIGHT_PEOPLE}).GetContentString().replace('\r','').split("\n")
                 userIds = []
                 for i in options:
-                    if "$%$%$" in i:
-                        if i.split("$%$%$")[1] == game.lower():
-                            userIds.append(i.split("$%$%$")[0])
+                    if custom_deliminator in i:
+                        if i.split(custom_deliminator)[1] == game.lower():
+                            userIds.append(i.split(custom_deliminator)[0])
                 result = "All people who play " + game.lower() + " are:\n"
                 for i in userIds:
                     try:

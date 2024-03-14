@@ -36,4 +36,4 @@ async def sendImageReply(url, cardname:str, message:Message):
         parsedFilename = re.findall('inline;filename="(.*)"', str(extraFilename))[0]
         data = io.BytesIO(await resp.read())
         sentMessage = await message.reply(file=discord.File(data, parsedFilename), mention_author=False)
-        await sentMessage.add_reaction(hc_constants.DENY)
+        await sentMessage.add_reaction(hc_constants.DELETE)

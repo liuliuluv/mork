@@ -1,10 +1,10 @@
 from shared_vars import allCards
 
-async def cardNameRequest(requestName):
+def cardNameRequest(requestName):
   maxWeight = 1
   maxWeightName = ""
   for cardName in allCards.keys():
-    currentWeight = await similarity(cardName, requestName)
+    currentWeight = similarity(cardName, requestName)
     if currentWeight > maxWeight:
       maxWeight = currentWeight
       maxWeightName = cardName
@@ -14,15 +14,16 @@ async def cardNameRequest(requestName):
   return maxWeightName
 
 
-async def similarity(name, key):
-  weight = 0
-  for i in range(len(key)):
-    for j in range(len(name)):
-      for x in range(1, min( len(name) - j , len(key) - i ) + 1):
-        if key[i:i+x] != name[j:j+x] or x == min( len(name) - j , len(key) - i ):
-          weight += max((x-1) * (x-1) -1, 0)
-          break
-  if name == key or name + " " == key:
-    weight = 10000000
-  return weight
+def similarity(name:str, requestName:str):
+    if name == requestName or name + " " == requestName:
+        return 10000000
+    weight = 0
+    for i in range(len(requestName)):
+        for j in range(len(name)):
+            minOfNameAndRequest = min( len(name) - j , len(requestName) - i )
+            for x in range(1, minOfNameAndRequest + 1):
+                if requestName[i:i+x] != name[j:j+x] or x == minOfNameAndRequest:
+                    weight += max((x-1) * (x-1) -1, 0)
+                    break
+    return weight
 

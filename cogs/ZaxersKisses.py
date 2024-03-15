@@ -76,7 +76,7 @@ class ZaxersKissesCog(commands.Cog):
             await ctx.send("You don't have any kisses to send!")
 
     @commands.command()
-    async def kisses(self,ctx:commands.Context):
+    async def kisses(self, ctx:commands.Context):
         kissers_list = KissSheet.col_values(2)
         if str(ctx.author.id) in kissers_list:
             row = kissers_list.index(str(ctx.author.id)) + 1

@@ -14,7 +14,7 @@ class QuotesCog(commands.Cog):
         self.bot = bot
         
     @commands.command()
-    async def quote(self, ctx:commands.Context, lookback=1):
+    async def quote(self, ctx:commands.Context, lookback = 1):
         if lookback == 0:
             await ctx.send("^\nfucker")
             return

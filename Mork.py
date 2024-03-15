@@ -14,13 +14,12 @@ class MyBot(commands.Bot):
         print('This is asynchronous!')
         initial_extensions = [
             'cogs.General',
-        'cogs.HellscubeDatabase',
+            'cogs.HellscubeDatabase',
             'cogs.Lifecycle',
-        'cogs.Quotes',
-         'cogs.Roles',
-         'cogs.SpecificCards',
-       'cogs.ZaxersKisses'
-   
+            'cogs.Quotes',
+            'cogs.Roles',
+            'cogs.SpecificCards',
+            'cogs.ZaxersKisses'
           ]
         for i in initial_extensions:
             await self.load_extension(i)
@@ -63,13 +62,13 @@ async def compileveto(ctx:commands.Context):
     if messages is None:
         return
     messages = [message async for message in messages]
-    acceptedCards:list[discord.Message] = []
-    errataedCards:list[discord.Message] = []
-    vetoedCards:list[discord.Message] = []
-    vetoHell:list[discord.Message] = []
+    acceptedCards:list[str] = []
+    errataedCards:list[str] = []
+    vetoedCards:list[str] = []
+    vetoHell:list[str] = []
     for messageEntry in messages:
         try:
-            upvote = get(messageEntry.reactions, emoji=hc_constants.VOTE_UP).count
+            upvote = get(messageEntry.reactions, emoji=hc_constants.VOTE_UP).count # todo: see if this could be || 0
         except:
             upvote = -1
         try:
@@ -145,10 +144,10 @@ async def compileveto(ctx:commands.Context):
     await vetoDiscussionChannel.send(content= f"!! VETO POLLS HAVE BEEN PROCESSED !!")
 
     # had to use format because python doesn't like \n inside template brackets
-    await vetoDiscussionChannel.send(content= "\n\nACCEPTED CARDS: \n{0}".format("\n".join(acceptedCards)))
-    await vetoDiscussionChannel.send(content= "\n\nNEEDS ERRATA: \n{0}".format("\n".join(errataedCards)))
-    await vetoDiscussionChannel.send(content= "\n\nnVETOED: \n{0}".format("\n".join(vetoedCards)))
-    await vetoDiscussionChannel.send(content= "\n\nnVETO HELL: \n{0}".format("\n".join(vetoHell)))
+    await vetoDiscussionChannel.send(content = "\n\nACCEPTED CARDS: \n{0}".format("\n".join(acceptedCards)))
+    await vetoDiscussionChannel.send(content = "\n\nNEEDS ERRATA: \n{0}".format("\n".join(errataedCards)))
+    await vetoDiscussionChannel.send(content = "\n\nnVETOED: \n{0}".format("\n".join(vetoedCards)))
+    await vetoDiscussionChannel.send(content = "\n\nnVETO HELL: \n{0}".format("\n".join(vetoHell)))
 
 
 bot.run(DISCORD_ACCESS_TOKEN)

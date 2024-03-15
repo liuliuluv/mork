@@ -1,7 +1,7 @@
 import asyncio
 from datetime import datetime
 import random
-from discord import  RawReactionActionEvent, Role
+from discord import  Member, RawReactionActionEvent, Role
 import discord
 from discord.ext import commands
 from discord.message import Message
@@ -12,7 +12,7 @@ from checkErrataSubmissions import checkErrataSubmissions
 from checkSubmissions import checkSubmissions
 
 import hc_constants
-from is_mork import is_mork
+from is_mork import is_mork, reasonableCard
 from printCardImages import print_card_images
 from shared_vars import intents,cardSheet,allCards
 
@@ -53,7 +53,7 @@ class LifecycleCog(commands.Cog):
             log += f"{payload.message_id}: Removed {payload.emoji.name} from {payload.user_id} ({user.name}|{user.nick}) at {datetime.now()}\n"
 
     @commands.Cog.listener()
-    async def on_member_join(member):
+    async def on_member_join(self,member:Member):
         await member.send(f"Hey there! Welcome to HellsCube. Obligatory pointing towards <#{hc_constants.RULES_CHANNEL}>, <#{hc_constants.FAQ_CHANNEL}> and <#{hc_constants.RESOURCES_CHANNEL}>. Especially the explanation for all our channels and bot command to set your pronouns. Enjoy your stay!")
 
     @commands.Cog.listener()
@@ -119,10 +119,25 @@ class LifecycleCog(commands.Cog):
                 await user.send('No "@" are allowed in card title submissions to prevent me from spamming')
                 return # no pings allowed
             file = await message.attachments[0].to_file()
-            sentMessage = await message.channel.send(content = f"{message.content} by {message.author.mention}" , file = file)
-            await sentMessage.add_reaction(hc_constants.VOTE_UP)
-            await sentMessage.add_reaction(hc_constants.VOTE_DOWN)
-            await sentMessage.add_reaction(hc_constants.DELETE)
+            if reasonableCard():
+                vetoChannel = self.bot.get_channel(hc_constants.VETO_CHANNEL)
+                acceptedChannel = self.bot.get_channel(hc_constants.SUBMISSIONS_DISCUSSION_CHANNEL)
+                logChannel = self.bot.get_channel(hc_constants.MORK_SUBMISSIONS_LOGGING_CHANNEL)
+                acceptContent = message.content + " was accepted"
+                mention = f'<@{str(message.raw_mentions[0])}>'
+                accepted_message_no_mentions = message.content.replace(mention, message.mentions[0].name)
+                copy = await message.attachments[0].to_file()
+                await vetoChannel.send(content=accepted_message_no_mentions, file=copy)
+                copy2 = await message.attachments[0].to_file()
+                logContent = f"{acceptContent}, message id: {message.id}, upvotes: 0, downvotes: 0, magic: true"
+                await acceptedChannel.send(content = "✨✨ {acceptContent} ✨✨")
+                await acceptedChannel.send(content = "", file = file)
+                await logChannel.send(content=logContent, file = copy2)
+            else:
+                sentMessage = await message.channel.send(content = f"{message.content} by {message.author.mention}" , file = file)
+                await sentMessage.add_reaction(hc_constants.VOTE_UP)
+                await sentMessage.add_reaction(hc_constants.VOTE_DOWN)
+                await sentMessage.add_reaction(hc_constants.DELETE)
             await message.delete()
 
 async def setup(bot:commands.Bot):
@@ -136,7 +151,7 @@ async def status_task(bot:commands.Bot):
     while True:
         creator = random.choice(cardSheet.col_values(3)[4:])
         action = random.choice(hc_constants.statusList)
-        status = action.replace("@creator", creator)
+        status = action.replace("@creator", str(creator))
         print(status)
         await checkSubmissions(bot)
         await checkErrataSubmissions(bot)

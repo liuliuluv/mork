@@ -8,21 +8,24 @@ from googleapiclient.discovery import build
 from secrets.reddit_secrets import ID,SECRET,PASSWORD,USER_AGENT,NAME
 
 # from shared_vars import drive
+a="{{basic land}}"
+b="romantic lantern"
 
+print(set(list(a)).symmetric_difference(list(b)))
 
-nammappings=[]
+# nammappings=[]
 
+# print("{{{{basic land".split("{{")[1:])
+# print('\n\nACCEPTED CARDS: \n{0}'.format("\n".join(["a","b"])))
 
-print('\n\nACCEPTED CARDS: \n{0}'.format("\n".join(["a","b"])))
+# print("e" not in ["a"])
 
-print("e" not in ["a"])
+# print(f"{ 't'.join(['a','s'])}")
 
-print(f"{ 't'.join(['a','s'])}")
-
-for i in range(5):
-    if i==2:
-        continue
-    print(i)
+# for i in range(5):
+#     if i==2:
+#         continue
+#     print(i)
 
 
 # https://lh3.googleusercontent.com/d/1hOyWsWgYq2OYjY8GGWWjEJnXLb17iacX

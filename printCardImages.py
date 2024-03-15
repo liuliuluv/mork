@@ -20,7 +20,7 @@ async def print_card_images(message:Message):
         requestedCards.append(await cardNameRequest(cardName))
     for post in requestedCards:
         if post == "":
-            await message.reply("No Match Found!", mention_author=False)
+            await message.reply("No Match Found!", mention_author = False)
         else:
             await sendImageReply(allCards[post].getImg(), allCards[post].getName(), message)
 
@@ -29,7 +29,7 @@ async def sendImageReply(url, cardname:str, message:Message):
     async with aiohttp.ClientSession() as session:
       async with session.get(url) as resp:
         if resp.status != 200:
-          await message.reply('Something went wrong while getting the link for ' + cardname + '. Wait for @exalted to fix it.')
+          await message.reply('Something went wrong while getting the link for ' + cardname + '. Wait for @llllll to fix it.')
           return
          # currently extraFilename looks like inline;filename="                                Skald.png"
         extraFilename = resp.headers.get("Content-Disposition")  

@@ -8,10 +8,10 @@ from discord.ext import commands
 
 from reddit_functions import postToReddit
 
-cardSheetUnapproved = googleClient.open_by_key(hc_constants.HELLSCUBE_DATABASE).get_worksheet(1)
+cardSheetUnapproved = googleClient.open_by_key(hc_constants.HELLSCUBE_DATABASE).worksheet("Kopie van Database")
 
 
-async def acceptCard(bot:commands.Bot,cardMessage:str,file:discord.File,cardName:str,authorName:str):
+async def acceptCard(bot:commands.Bot, cardMessage:str, file:discord.File, cardName:str, authorName:str):
     cardListChannel = bot.get_channel(hc_constants.FOUR_ONE_CARD_LIST_CHANNEL)
     await cardListChannel.send(content=cardMessage, file=file)
 
@@ -21,10 +21,10 @@ async def acceptCard(bot:commands.Bot,cardMessage:str,file:discord.File,cardName
         out.write(file.fp.read())  ## Read bytes into file
 
     try:
-        postToReddit(
-            image_path,
+        await  postToReddit(
             title = f"{cardMessage} was accepted!",
-            flair = hc_constants.ACCEPTED_FLAIR
+            flair = hc_constants.ACCEPTED_FLAIR,
+            image_path=image_path
         )
     except:
         ...

@@ -17,10 +17,10 @@ async def checkErrataSubmissions(bot:commands.Bot):
     for i in range(len(messages)):
         if "@everyone" in messages[i].content:
             continue
-        if get(messages[i].reactions, emoji=hc_constants.ACCEPT):
+        if get(messages[i].reactions, emoji = hc_constants.ACCEPT):
             continue
-        upvote = get(messages[i].reactions, emoji=hc_constants.VOTE_UP)
-        downvote = get(messages[i].reactions, emoji=hc_constants.VOTE_DOWN)
+        upvote = get(messages[i].reactions, emoji = hc_constants.VOTE_UP)
+        downvote = get(messages[i].reactions, emoji = hc_constants.VOTE_DOWN)
 
         if upvote and downvote:
             up_count = upvote.count
@@ -28,6 +28,6 @@ async def checkErrataSubmissions(bot:commands.Bot):
             messageAge = timeNow - messages[i].created_at
             if (up_count - downCount) > 14 and messageAge >= timedelta(days=1):
                 acceptContent = messages[i].content
-                await acceptedChannel.send(content=acceptContent)
+                await acceptedChannel.send(content = acceptContent)
                 await messages[i].add_reaction(hc_constants.ACCEPT)
     print("------done checking errata submissions-----")

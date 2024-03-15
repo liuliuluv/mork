@@ -54,7 +54,6 @@ class GeneralCog(commands.Cog):
         message = await subChannel.fetch_message(id)
         await ctx.send(message.jump_url)
 
-    
     @commands.command()
     async def macro(ctx:commands.Context, thing:str, *args):
         if thing == "help":

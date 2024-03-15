@@ -31,7 +31,7 @@ async def sendImage(url, ctx):
     async with aiohttp.ClientSession() as session:
       async with session.get(url) as resp:
         if resp.status != 200:
-          await ctx.send('Something went wrong while getting the link. Wait for @exalted to fix it.')
+          await ctx.send('Something went wrong while getting the link. Wait for @llllll to fix it.')
           return
         data = io.BytesIO(await resp.read())
         await ctx.send(file=discord.File(data, url))
@@ -748,5 +748,5 @@ class SpecificCardsCog(commands.Cog):
         await sendImage(
             "https://cdn.discordapp.com/attachments/631289553415700492/631292919390928918/md7fop4la1k31.png", ctx)
     
-async def setup(bot):
+async def setup(bot:commands.Bot):
     await bot.add_cog(SpecificCardsCog(bot))

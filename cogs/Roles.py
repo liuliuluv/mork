@@ -122,7 +122,7 @@ class RolesCog(commands.Cog):
             message = "To give yourself a pronoun role type !pronoun and the subjective version of that pronoun. (You can have as many as you want.) The current list of pronouns is:\n"
             for i in roleId.keys():
                 message += i + "\n"
-            message += "If your pronouns are missing please tag Exalted"
+            message += "If your pronouns are missing please tag llllll"
             await ctx.send(message)
             return
         if roleName in roleId.keys():
@@ -139,7 +139,7 @@ class RolesCog(commands.Cog):
             await ctx.send("Gave " + str(ctx.message.author) + " the role " + role.name)
             return
         await ctx.send(
-            "This is not currently a pronoun role, make sure to type !pronoun and then only the subjective pronoun (Example !pronoun they), If your pronouns are missing please tag Exalted")
+            "This is not currently a pronoun role, make sure to type !pronoun and then only the subjective pronoun (Example !pronoun they), If your pronouns are missing please tag llllll")
 
 
 async def setup(bot:commands.Bot):

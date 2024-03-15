@@ -12,7 +12,7 @@ def is_mork_two(user_id:int):
     return user_id == hc_constants.MORK_2
 
 def reasonableCard():
-    return random.randint(0,1500) == 6969
+    return random.randint(0,1500) == 69
 
 def uploadToDrive(path:str):
     file = drive.CreateFile({

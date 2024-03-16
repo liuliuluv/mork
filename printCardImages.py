@@ -17,7 +17,7 @@ async def print_card_images(message:Message):
         await message.reply("Don't call more than 10 cards per message, final warning, keep trying and you get blacklisted from the bot. Blame dRafter for this if you're actually trying to use the bot.")
         return
     for cardName in message_text:
-        requestedCards.append(await cardNameRequest(cardName))
+        requestedCards.append(cardNameRequest(cardName))
     for post in requestedCards:
         if post == "":
             await message.reply("No Match Found!", mention_author = False)

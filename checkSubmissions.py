@@ -3,6 +3,8 @@
 from datetime import datetime, timezone, timedelta
 import hc_constants
 from discord.ext import commands
+from discord import Role
+
 from discord.utils import get
 
 from is_mork import is_mork
@@ -19,8 +21,10 @@ async def checkSubmissions(bot:commands.Bot):
     messages = subChannel.history(after=oneWeek, limit=None)
     if messages is None:
         return
+
     messages = [message async for message in messages]
     for messageEntry in messages:
+   
         if "@everyone" in messageEntry.content:
             continue # just ignore these
         upvote = get(messageEntry.reactions, emoji = hc_constants.VOTE_UP)
@@ -40,7 +44,21 @@ async def checkSubmissions(bot:commands.Bot):
             mention = f'<@{str(messageEntry.raw_mentions[0])}>'
             accepted_message_no_mentions = messageEntry.content.replace(mention, messageEntry.mentions[0].name)
             copy = await messageEntry.attachments[0].to_file()
-            await vetoChannel.send(content=accepted_message_no_mentions, file=copy)
+            vetoEntry =  await vetoChannel.send(content=accepted_message_no_mentions, file=copy)
+
+
+            await vetoEntry.add_reaction(hc_constants.VOTE_UP)
+            await vetoEntry.add_reaction(bot.get_emoji(hc_constants.CIRION_SPELLING))
+            await vetoEntry.add_reaction(hc_constants.VOTE_DOWN)
+            await vetoEntry.add_reaction(bot.get_emoji(hc_constants.MANA_GREEN))
+            await vetoEntry.add_reaction(bot.get_emoji(hc_constants.MANA_WHITE))
+            await vetoEntry.add_reaction("🤮")
+            await vetoEntry.add_reaction("🤔")
+            thread = await vetoEntry.create_thread(name = vetoEntry.content)
+            role:Role = get(vetoEntry.author.guild.roles, id=hc_constants.VETO_COUNCIL_MAYBE)
+            await thread.send(role.mention)
+
+
             copy2 = await messageEntry.attachments[0].to_file()
             logContent = f"{acceptContent}, message id: {messageEntry.id}, upvotes: {upCount}, downvotes: {downCount}"
             await acceptedChannel.send(content = acceptContent)

@@ -35,6 +35,7 @@ class LifecycleCog(commands.Cog):
         imgList = cardSheet.col_values(2)[3:]
         creatorList = cardSheet.col_values(3)[3:]
         global allCards # Need to modify shared allCards object
+        
         for i in range(len(nameList)):
             allCards[nameList[i].lower()] = Card(nameList[i], imgList[i], creatorList[i])
         self.bot.loop.create_task(status_task(self.bot))
@@ -91,7 +92,7 @@ class LifecycleCog(commands.Cog):
         if message.channel.id == hc_constants.HELLS_UNO_CHANNEL:
             await message.add_reaction(hc_constants.VOTE_UP)
             await message.add_reaction(hc_constants.VOTE_DOWN)
-        if message.channel.id == hc_constants.VETO_CHANNEL or message.channel.id == hc_constants.EDH_POLLS_CHANNEL:
+        if message.channel.id == hc_constants.VETO_CHANNEL:
             await message.add_reaction(hc_constants.VOTE_UP)
             await message.add_reaction(self.bot.get_emoji(hc_constants.CIRION_SPELLING))
             await message.add_reaction(hc_constants.VOTE_DOWN)
@@ -99,8 +100,8 @@ class LifecycleCog(commands.Cog):
             await message.add_reaction(self.bot.get_emoji(hc_constants.MANA_WHITE))
             await message.add_reaction("🤮")
             await message.add_reaction("🤔")
-            thread = await message.create_thread(name=message.content)
-            role:Role = get(message.author.guild.roles, id==hc_constants.VETO_COUNCIL_MAYBE)
+            thread = await message.create_thread(name = message.content)
+            role:Role = get(message.author.guild.roles, id = hc_constants.VETO_COUNCIL_MAYBE)
             await thread.send(role.mention)
         if message.channel.id == hc_constants.FOUR_ZERO_ERRATA_SUBMISSIONS_CHANNEL:
             if "@" in message.content:

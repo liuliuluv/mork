@@ -7,3 +7,4 @@
 - tag people when errata is needed
 - replace google client with gspread
 - stormstorm images are borked
+- Database Bot Readable see if this can be deleted

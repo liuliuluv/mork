@@ -36,3 +36,49 @@ I have no idea what is going on, I think Exalted and Cirion built this. (and Zax
 
 # Assorted commands
 `nohup python3 Mork.py >/dev/null 2>&1`
+
+
+
+
+# The lifecycle of a card
+
+## 1. Coming up with ideas
+Uh just do it
+
+## 1.a What makes a good card
+Don't ask me, seriously.
+
+## 2. Brainstorming
+Once you have your concept, you'll want to head over to the two brainstorming channels: draw-three and put-two-back. Here you can collect feedback and/or inspire others.
+
+## 2.a Art
+While the definition of what art is is fraught at best, try to avoid AI art. If you have the concept, but don't have the skills yet, try the #art-request channel
+
+## 3. Submitting
+One you have your finished card and are ready to throw it into the lion pit, head over to #submissions. Create a post that consists of the name of your card and the picture. Nothing more, nothing less. Make sure you do it right, because you can only post once an hour. Once posted, Mork will delete your post, and repost it as a poll. Polls with have thumbs up, thumbs down, and X. The X is there in case you decide you need that post to be removed.
+
+And now you wait. If your card has 25 more upvotes than downvotes after 24 hours, but within 7 days. It makes it to the next round! When the conditions are met, Mork will delete the post and announce it in #submissions-discussion.
+
+## 4. Veto time
+Right after Mork sends the message in #submissions-discussion, it'll create a thread in a secret channel accessed only by the Veto Council. Mork attaches the relevant voting emoji and tags the Veto Council. They will discuss and assess the card and after some amount of time (when the council has decided on a handful of cards) it will meet one of its fates
+
+## 4.1 It passes!
+Cong!
+rats!
+
+Your card will go down in infamy. By that, I mean it gets posted to reddit with the Accepted flair, added to the unapproved database sheet (Copie van Database), and posted to card-list.
+
+## 4.2 It needs errata!
+The good news is, the card has a good concept. The bad news is that it needs balancing. Once you've been made aware, you can reach out in #errata-discussion for input, tweak your card, then submit it to #errata-submissions. From there, a Veto Council member will post it to the secret channel, and Mork will create a new thread and votes there. Rinse and repeat.
+
+## 4.3 Vetoed!
+For some reason, the card was vetoed. This can be for all kinds of reasons: difficult to tweak, doesn't fit with the themes, or ????. ???? is really the worst one.
+
+## 4.4 Veto Hell
+Essentially purgatory. A decision wasn't reached one way or another in time... but don't give up yet! Maybe it'll be in the next round.
+
+## 4.5 ????
+There's always the chance a process fails. Who knows what happens then.
+
+## 5. It percolates out
+From time to time, a mod will take the entries in the unapproved sheet of the database, and transcribe them to the main sheet. Once the cards are in the main sheet, they'll start to show up in other places. Mork will search against them, hellfall will list them, cube XML files will be created that include them, and cube cobra will show them too. (The exact timings on when these will happen is fuzzy at best.)

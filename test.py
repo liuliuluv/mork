@@ -5,13 +5,9 @@ from googleapiclient.discovery import build
 # import asyncpraw
 # import asyncio
 # import hc_constants
-from secrets.reddit_secrets import ID,SECRET,PASSWORD,USER_AGENT,NAME
 
-# from shared_vars import drive
-a="{{basic land}}"
-b="romantic lantern"
 
-print(set(list(a)).symmetric_difference(list(b)))
+
 
 # nammappings=[]
 

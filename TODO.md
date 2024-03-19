@@ -8,3 +8,4 @@
 - replace google client with gspread
 - stormstorm images are borked
 - Database Bot Readable see if this can be deleted
+- The regular reddit posting is code is gross. fix it

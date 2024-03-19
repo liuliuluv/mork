@@ -54,7 +54,7 @@ for i in cardsDataSearch:
       break
     stats = i.lower().split("%&%&%")
     name = stats[0]
-    img = stats[1]
+    img = i.split("%&%&%")[1]
     creator = stats[2]
     cmc = 0
     cardset = stats[3]
@@ -260,9 +260,12 @@ def searchFor(searchDict:dict):
     and checkForString(searchDict["creator"], i.creator())\
     and checkForString(searchDict["cardset"], i.cardset())\
     and checkForString(searchDict["legality"], i.legality()):
-      if checkForInt(searchDict["cmc"], i.cmc()) and checkForInt(searchDict["tou"], i.toughness()) and checkForInt(searchDict["pow"], i.power()) and checkForInt(searchDict["loy"], i.loyalty()):
-        if checkForColor(searchDict["color"], i.colors()):
-          hits.append(i)
+      if checkForInt(searchDict["cmc"], i.cmc())\
+        and checkForInt(searchDict["tou"], i.toughness())\
+        and checkForInt(searchDict["pow"], i.power())\
+        and checkForInt(searchDict["loy"], i.loyalty()):
+            if checkForColor(searchDict["color"], i.colors()):
+                hits.append(i)
   return hits
 
 

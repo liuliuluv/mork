@@ -23,7 +23,7 @@ class MyBot(commands.Bot):
         for i in initial_extensions:
             await self.load_extension(i)
 
-bot = MyBot(command_prefix='!', case_insensitive=True, intents=intents)
+bot = MyBot(command_prefix='%&', case_insensitive=True, intents=intents)
 bot.remove_command('help')
 
 

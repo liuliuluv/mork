@@ -1,19 +1,25 @@
 import asyncio
-from datetime import datetime
+from datetime import date, datetime
+import io
+import os
 import random
+import aiohttp
 from discord import  Member, RawReactionActionEvent, Role
 import discord
 from discord.ext import commands
 from discord.message import Message
 from discord.utils import get
 from CardClasses import Card
+from dateutil.parser import parse
 
 from checkErrataSubmissions import checkErrataSubmissions
 from checkSubmissions import checkSubmissions
 
+from cogs.HellscubeDatabase import searchFor
 import hc_constants
 from is_mork import is_mork, reasonableCard
 from printCardImages import print_card_images
+from reddit_functions import postToReddit
 from shared_vars import intents,cardSheet,allCards
 
 ONE_HOUR = 3600
@@ -153,8 +159,34 @@ async def status_task(bot:commands.Bot):
         creator = random.choice(cardSheet.col_values(3)[4:])
         action = random.choice(hc_constants.statusList)
         status = action.replace("@creator", str(creator))
-        print(status)
+        # print(status)
         await checkSubmissions(bot)
         await checkErrataSubmissions(bot)
-        await bot.change_presence(status=discord.Status.online, activity=discord.Game(status))
+        await bot.change_presence(status = discord.Status.online, activity = discord.Game(status))
+        now = datetime.now()
+        if now.hour == 21 and now.minute < 5:
+            nowtime = now.date()
+            start = date(2024,3,16)
+            days_since_starting = (nowtime-start).days
+            cardOffset=608-days_since_starting
+            if cardOffset >= 0:
+                cards = searchFor({"cardset":"hc4"})
+                card=cards[cardOffset]
+                name=card.name()
+                url=card.img()
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url) as resp:
+                        if resp.status == 200:
+                            print(resp)                       
+                            image_path = f'tempImages/{name}'
+                            # with open(image_path, 'wb') as out: ## Open temporary file as bytes
+                            #     out.write(await resp.read())  ## Read bytes into file
+                            # try:
+                            #     await  postToReddit(
+                            #         title = f"HC4 Card of the ~day: {name}",
+                            #         image_path=image_path
+                            #     )
+                            # except:
+                            #     ...
+                            # os.remove(image_path)
         await asyncio.sleep(FIVE_MINUTES)

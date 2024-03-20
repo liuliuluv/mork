@@ -1,4 +1,4 @@
-from pprint import pp
+import pprint as pp
 import discord
 from discord.ext import commands
 from shared_vars import drive
@@ -55,7 +55,8 @@ class GeneralCog(commands.Cog):
         await ctx.send(message.jump_url)
 
     @commands.command()
-    async def macro(ctx:commands.Context, thing:str, *args):
+    async def macro(self, ctx:commands.Context, thing:str, *args):
+        print(args)
         if thing == "help":
             message = "Macros are:\nJoke [word]\n"
             for name in hc_constants.macroList.keys():
@@ -67,12 +68,13 @@ class GeneralCog(commands.Cog):
                         message += f"                {subname}\n"
             await ctx.send(message)
             return
-        if thing.lower() in hc_constants.macroList.keys():
-            if type(hc_constants.macroList[thing.lower()]) is str:
-                await ctx.send(hc_constants.macroList[thing.lower()].replace("@arg", " ".join(args)))
+        lowerThing = thing.lower()
+        if lowerThing in hc_constants.macroList.keys():
+            if type(hc_constants.macroList[lowerThing]) is str:
+                await ctx.send(hc_constants.macroList[lowerThing].replace("@arg", " ".join(args)))
             else:
-                pp.pprint(hc_constants.macroList[thing.lower()])
-                await ctx.send(hc_constants.macroList[thing.lower()][args[0].lower()])
+                pp.pprint(hc_constants.macroList[lowerThing])
+                await ctx.send(hc_constants.macroList[lowerThing][args[0].lower()])
 
 
 

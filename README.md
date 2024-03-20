@@ -4,6 +4,7 @@ I have no idea what is going on, I think Exalted and Cirion built this. (and Zax
 
 # Setting up for local development
 1. Install VSCode and Python plugin
+1. Get Python >=3.9
 1. Install dependencies via `pip install -r requirements.txt`
 1. Make a copy of `discord_token.template.py` called `discord_token.py`. Add the bot token.
 1. Make a copy of `reddit_secrets.template.py` called `reddit_secrets.py`. Add creds. https://support.reddithelp.com/hc/en-us/articles/16160319875092-Reddit-Data-API-Wiki 
@@ -25,6 +26,12 @@ I have no idea what is going on, I think Exalted and Cirion built this. (and Zax
 - Make a new Discord application on the dev portal and invite it to the server. Replace the token in the code with the new token.
 - Make a Google Service Account and invite it to the Hellscube Database spreadsheet. Put its credentials somewhere so they can loaded.
 - Do the authentication part https://pythonhosted.org/PyDrive/quickstart.html so that the quote and gamenight commands work. Also change the file ids.
+
+
+
+# Troubleshooting
+## None of your dependencies are showing up
+It's pretty easy to get multiple versions of Python installed. particularly 3? If you have this issue, run pip in the context of the python version you want: `python3 -m pip install -r requirements.txt`
 
 
 # Concepts

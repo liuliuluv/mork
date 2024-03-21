@@ -14,11 +14,12 @@ class MyBot(commands.Bot):
         initial_extensions = [
             'cogs.General',
             'cogs.HellscubeDatabase',
-            'cogs.Lifecycle',
+           'cogs.Lifecycle',
             'cogs.Quotes',
             'cogs.Roles',
             'cogs.SpecificCards',
             'cogs.ZaxersKisses'
+            # 'cogs.Misc'
           ]
         for i in initial_extensions:
             await self.load_extension(i)

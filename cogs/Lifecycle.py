@@ -36,7 +36,6 @@ class LifecycleCog(commands.Cog):
     async def on_ready(self):
         global log
         print(f'{self.bot.user.name} has connected to Discord!')
-
         nameList = cardSheet.col_values(1)[3:]
         imgList = cardSheet.col_values(2)[3:]
         creatorList = cardSheet.col_values(3)[3:]
@@ -106,7 +105,7 @@ class LifecycleCog(commands.Cog):
             await message.add_reaction(self.bot.get_emoji(hc_constants.MANA_WHITE))
             await message.add_reaction("🤮")
             await message.add_reaction("🤔")
-            thread = await message.create_thread(name = message.content)
+            thread = await message.create_thread(name = message.content[0:99])
             role:Role = get(message.author.guild.roles, id = hc_constants.VETO_COUNCIL_MAYBE)
             await thread.send(role.mention)
         if message.channel.id == hc_constants.FOUR_ZERO_ERRATA_SUBMISSIONS_CHANNEL:
@@ -152,7 +151,7 @@ async def setup(bot:commands.Bot):
 
 
 
-FIVE_MINUTES=300
+FIVE_MINUTES = 300
 
 async def status_task(bot:commands.Bot):
     while True:
@@ -164,29 +163,29 @@ async def status_task(bot:commands.Bot):
         await checkErrataSubmissions(bot)
         await bot.change_presence(status = discord.Status.online, activity = discord.Game(status))
         now = datetime.now()
-        if now.hour == 21 and now.minute < 5:
+        if now.hour == 5 and now.minute <= 20 and now.minute >=14:
             nowtime = now.date()
             start = date(2024,3,16)
-            days_since_starting = (nowtime-start).days
-            cardOffset=608-days_since_starting
+            days_since_starting = (nowtime - start).days
+            cardOffset = 608 - days_since_starting
             if cardOffset >= 0:
                 cards = searchFor({"cardset":"hc4"})
-                card=cards[cardOffset]
-                name=card.name()
-                url=card.img()
+                card = cards[cardOffset]
+                name = card.name()
+                url = card.img()
                 async with aiohttp.ClientSession() as session:
                     async with session.get(url) as resp:
                         if resp.status == 200:
                             print(resp)                       
                             image_path = f'tempImages/{name}'
-                            # with open(image_path, 'wb') as out: ## Open temporary file as bytes
-                            #     out.write(await resp.read())  ## Read bytes into file
-                            # try:
-                            #     await  postToReddit(
-                            #         title = f"HC4 Card of the ~day: {name}",
-                            #         image_path=image_path
-                            #     )
-                            # except:
-                            #     ...
-                            # os.remove(image_path)
+                            with open(image_path, 'wb') as out: ## Open temporary file as bytes
+                                out.write(await resp.read())  ## Read bytes into file
+                            try:
+                                await  postToReddit(
+                                    title = f"HC4 Card of the ~day: {name}",
+                                    image_path=image_path
+                                )
+                            except:
+                                ...
+                            os.remove(image_path)
         await asyncio.sleep(FIVE_MINUTES)

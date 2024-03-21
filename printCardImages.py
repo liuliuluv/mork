@@ -10,7 +10,7 @@ from discord.message import Message
 
 async def print_card_images(message:Message):
     message_text = message.content.lower().split("{{")[1:]
-    for i in range(len(message_text)):
+    for i in range(len(message_text)): # TODO: maybe use a .map here
       message_text[i] = message_text[i].split("}}")[0]
     requestedCards = []
     if len(message_text) > 10 and message.author.id != hc_constants.CIRION:
@@ -35,5 +35,5 @@ async def sendImageReply(url, cardname:str, message:Message):
         extraFilename = resp.headers.get("Content-Disposition")  
         parsedFilename = re.findall('inline;filename="(.*)"', str(extraFilename))[0]
         data = io.BytesIO(await resp.read())
-        sentMessage = await message.reply(file=discord.File(data, parsedFilename), mention_author=False)
+        sentMessage = await message.reply(file = discord.File(data, parsedFilename), mention_author=False)
         await sentMessage.add_reaction(hc_constants.DELETE)

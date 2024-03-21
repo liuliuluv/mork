@@ -54,8 +54,9 @@ async def checkSubmissions(bot:commands.Bot):
             await vetoEntry.add_reaction(bot.get_emoji(hc_constants.MANA_WHITE))
             await vetoEntry.add_reaction("🤮")
             await vetoEntry.add_reaction("🤔")
-            thread = await vetoEntry.create_thread(name = vetoEntry.content)
-            role:Role = get(vetoEntry.author.guild.roles, id=hc_constants.VETO_COUNCIL_MAYBE)
+            
+            thread = await vetoEntry.create_thread(name = vetoEntry.content[0:99])
+            role:Role = get(vetoEntry.author.guild.roles, id = hc_constants.VETO_COUNCIL_MAYBE)
             await thread.send(role.mention)
 
 
@@ -63,7 +64,7 @@ async def checkSubmissions(bot:commands.Bot):
             logContent = f"{acceptContent}, message id: {messageEntry.id}, upvotes: {upCount}, downvotes: {downCount}"
             await acceptedChannel.send(content = acceptContent)
             await acceptedChannel.send(content = "", file = file)
-            await logChannel.send(content=logContent, file=copy2)
+            await logChannel.send(content = logContent, file = copy2)
             await messageEntry.delete()
             continue
     print("------done checking submissions-----")

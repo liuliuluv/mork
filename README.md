@@ -43,7 +43,7 @@ It's pretty easy to get multiple versions of Python installed. particularly 3? I
 
 # Assorted commands
 `nohup python3 Mork.py >/dev/null 2>&1`
-
+`nohup python3 -u Mork.py > nohup.out` - for looking at logs
 
 
 

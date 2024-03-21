@@ -8,8 +8,7 @@ def cardNameRequest(requestName):
     if currentWeight > maxWeight:
       maxWeight = currentWeight
       maxWeightName = cardName
-    elif currentWeight == maxWeight:
-      if len(cardName) < len(maxWeightName):
+    elif currentWeight == maxWeight and len(cardName) < len(maxWeightName): # if the similarity is a tie, use the shorter name. seems okay?
         maxWeightName = cardName
   return maxWeightName
 
@@ -23,7 +22,10 @@ def similarity(name:str, requestName:str):
             minOfNameAndRequest = min( len(name) - j , len(requestName) - i )
             for x in range(1, minOfNameAndRequest + 1):
                 if requestName[i:i+x] != name[j:j+x] or x == minOfNameAndRequest:
-                    weight += max((x-1) * (x-1) -1, 0)
+                    weight += max((x-1) * (x-1) -1, 0) # the further along in the matching we are, the better
                     break
     return weight
 
+
+
+# stuff

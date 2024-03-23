@@ -4,20 +4,15 @@
 # import asyncpraw
 # import asyncio
 # import hc_constants
+import re
 from dateutil.parser import parse
 
 from datetime import date, datetime,timedelta
 
 
 
-def t():
-    print(k())
+print(re.search("\.([^.]*)$","image.png").group())
 
-t()
-
-
-def k():
-    return "12"
 
 
 

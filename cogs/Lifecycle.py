@@ -9,7 +9,6 @@ from discord.ext import commands
 from discord.message import Message
 from discord.utils import get
 from CardClasses import Card
-from dateutil.parser import parse
 
 from checkErrataSubmissions import checkErrataSubmissions
 from checkSubmissions import checkSubmissions
@@ -155,8 +154,7 @@ FIVE_MINUTES = 300
 async def status_task(bot:commands.Bot):
     while True:
         creator = random.choice(cardSheet.col_values(3)[4:])
-        action = random.choice(hc_constants.statusList)
-        status = action.replace("@creator", str(creator))
+        status = random.choice(hc_constants.statusList)
         # print(status)
         await checkSubmissions(bot)
         await checkErrataSubmissions(bot)

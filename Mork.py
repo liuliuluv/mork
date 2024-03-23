@@ -19,7 +19,7 @@ class MyBot(commands.Bot):
             'cogs.Roles',
             'cogs.SpecificCards',
             'cogs.ZaxersKisses'
-          #  'cogs.Misc'
+           # 'cogs.Misc'
           ]
         for i in initial_extensions:
             await self.load_extension(i)
@@ -64,7 +64,6 @@ async def check_cogs(ctx:commands.Context, cog_name):
 
 @bot.command()
 async def compileveto(ctx:commands.Context):
-
     if ctx.channel.id != hc_constants.VETO_DISCUSSION_CHANNEL:
         await ctx.send("Veto Council Only")
         return
@@ -144,7 +143,13 @@ async def compileveto(ctx:commands.Context):
             resolvedAuthor = card_author if card_author != "" else "no author"
             cardMessage = f"**{resolvedName}** by **{resolvedAuthor}**"
             acceptedCards.append(cardMessage)
-            await acceptCard(bot=bot,cardMessage=cardMessage,cardName=dbname,authorName=card_author,file=file)
+            await acceptCard(
+                bot = bot,
+                file = file,
+                cardMessage = cardMessage,
+                cardName = dbname,
+                authorName = card_author
+                )
 
         # Veto case
         elif (downvote > 4 and downvote >= upvote and downvote >= errata):
@@ -162,10 +167,14 @@ async def compileveto(ctx:commands.Context):
     await vetoDiscussionChannel.send(content= f"!! VETO POLLS HAVE BEEN PROCESSED !!")
 
     # had to use format because python doesn't like \n inside template brackets
-    await vetoDiscussionChannel.send(content = "\n\nACCEPTED CARDS: \n{0}".format("\n".join(acceptedCards)))
-    await vetoDiscussionChannel.send(content = "\n\nNEEDS ERRATA: \n{0}".format("\n".join(errataedCards)))
-    await vetoDiscussionChannel.send(content = "\n\nVETOED: \n{0}".format("\n".join(vetoedCards)))
-    await vetoDiscussionChannel.send(content = "\n\nVETO HELL: \n{0}".format("\n".join(vetoHell)))
+    if(acceptedCards.__le__() > 0):
+        await vetoDiscussionChannel.send(content = "\n\nACCEPTED CARDS: \n{0}".format("\n".join(acceptedCards)))
+    if(errataedCards.__le__() > 0):
+        await vetoDiscussionChannel.send(content = "\n\nNEEDS ERRATA: \n{0}".format("\n".join(errataedCards)))
+    if(vetoedCards.__le__() > 0):
+        await vetoDiscussionChannel.send(content = "\n\nVETOED: \n{0}".format("\n".join(vetoedCards)))
+    if(vetoHell.__le__() > 0):
+        await vetoDiscussionChannel.send(content = "\n\nVETO HELL: \n{0}".format("\n".join(vetoHell)))
 
 
 bot.run(DISCORD_ACCESS_TOKEN)

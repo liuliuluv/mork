@@ -14,18 +14,36 @@ class MyBot(commands.Bot):
         initial_extensions = [
             'cogs.General',
             'cogs.HellscubeDatabase',
-           'cogs.Lifecycle',
+            'cogs.Lifecycle',
             'cogs.Quotes',
             'cogs.Roles',
             'cogs.SpecificCards',
             'cogs.ZaxersKisses'
-            # 'cogs.Misc'
+          #  'cogs.Misc'
           ]
         for i in initial_extensions:
             await self.load_extension(i)
 
-bot = MyBot(command_prefix='!', case_insensitive=True, intents=intents)
+bot = MyBot(command_prefix = '!', case_insensitive = True, intents=intents)
 bot.remove_command('help')
+
+def getCardMessage(acceptanceMessage:str):
+    dbname = ""
+    card_author = ""
+    if (len(acceptanceMessage)) == 0:
+        ... # This is really the case of setting both to "", but due to scoping i got lazy
+    elif (acceptanceMessage[0:3] == "by "):
+        card_author = str((acceptanceMessage.split("by "))[1])
+    else:
+        [firstPart, secondPart] = acceptanceMessage.split(" by ")
+        dbname = str(firstPart)
+        card_author = str(secondPart)
+
+    resolvedName = dbname if dbname !="" else "Crazy card with no name"
+    resolvedAuthor = card_author if card_author != "" else "no author"
+
+    return f"**{resolvedName}** by **{resolvedAuthor}**"
+
 
 
 @bot.command()
@@ -94,7 +112,7 @@ async def compileveto(ctx:commands.Context):
         elif (errata > 4
                 and errata >= upvote
                 and errata >= downvote):
-            errataedCards.append(getCardMessage(messageEntry))
+            errataedCards.append(getCardMessage(messageEntry.content))
             await messageEntry.add_reaction(hc_constants.ACCEPT)
             thread = messageEntry.guild.get_channel_or_thread(messageEntry.id)
             await thread.edit(archived = True)
@@ -126,11 +144,11 @@ async def compileveto(ctx:commands.Context):
             resolvedAuthor = card_author if card_author != "" else "no author"
             cardMessage = f"**{resolvedName}** by **{resolvedAuthor}**"
             acceptedCards.append(cardMessage)
-            acceptCard(bot=bot,cardMessage=cardMessage,cardName=dbname,authorName=card_author,file=file)
+            await acceptCard(bot=bot,cardMessage=cardMessage,cardName=dbname,authorName=card_author,file=file)
 
         # Veto case
         elif (downvote > 4 and downvote >= upvote and downvote >= errata):
-            vetoedCards.append(getCardMessage(messageEntry))
+            vetoedCards.append(getCardMessage(messageEntry.content))
             await messageEntry.add_reaction(hc_constants.ACCEPT) # see ./README.md
 
         # Veto Hell
@@ -138,7 +156,7 @@ async def compileveto(ctx:commands.Context):
             thread = messageEntry.guild.get_channel_or_thread(messageEntry.id)
             role = get(messageEntry.guild.roles, id = hc_constants.VETO_COUNCIL_MAYBE)
             await thread.send(role.mention)
-            vetoHell.append(getCardMessage(messageEntry))
+            vetoHell.append(getCardMessage(messageEntry.content))
 
 
     await vetoDiscussionChannel.send(content= f"!! VETO POLLS HAVE BEEN PROCESSED !!")
@@ -146,27 +164,8 @@ async def compileveto(ctx:commands.Context):
     # had to use format because python doesn't like \n inside template brackets
     await vetoDiscussionChannel.send(content = "\n\nACCEPTED CARDS: \n{0}".format("\n".join(acceptedCards)))
     await vetoDiscussionChannel.send(content = "\n\nNEEDS ERRATA: \n{0}".format("\n".join(errataedCards)))
-    await vetoDiscussionChannel.send(content = "\n\nnVETOED: \n{0}".format("\n".join(vetoedCards)))
-    await vetoDiscussionChannel.send(content = "\n\nnVETO HELL: \n{0}".format("\n".join(vetoHell)))
+    await vetoDiscussionChannel.send(content = "\n\nVETOED: \n{0}".format("\n".join(vetoedCards)))
+    await vetoDiscussionChannel.send(content = "\n\nVETO HELL: \n{0}".format("\n".join(vetoHell)))
 
 
 bot.run(DISCORD_ACCESS_TOKEN)
-
-def getCardMessage(acceptanceMessage:str):
-    dbname = ""
-    card_author = ""
-    if (len(acceptanceMessage)) == 0:
-        ... # This is really the case of setting both to "", but due to scoping i got lazy
-    elif (acceptanceMessage[0:3] == "by "):
-        card_author = str((acceptanceMessage.split("by "))[1])
-    else:
-        [firstPart, secondPart] = acceptanceMessage.split(" by ")
-        dbname = str(firstPart)
-        card_author = str(secondPart)
-
-    resolvedName = dbname if dbname !="" else "Crazy card with no name"
-    resolvedAuthor = card_author if card_author != "" else "no author"
-
-    return f"**{resolvedName}** by **{resolvedAuthor}**"
-
-

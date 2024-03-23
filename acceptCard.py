@@ -43,7 +43,7 @@ async def acceptCard(bot:commands.Bot, cardMessage:str, file:discord.File, cardN
         dbRowIndex = len(allCardNames) + 1
         if cardName == "":
             cardName = "NO NAME"
-    cardSheetUnapproved.update_cell(dbRowIndex, 4, imageUrl)
+    cardSheetUnapproved.update_cell(dbRowIndex, 2, imageUrl)
     if newCard:
         cardSheetUnapproved.update_cell(dbRowIndex, 1, cardName)
-        cardSheetUnapproved.update_cell(dbRowIndex, 6, authorName)
+        cardSheetUnapproved.update_cell(dbRowIndex, 3, authorName)

@@ -59,7 +59,7 @@ class SpecificCardsCog(commands.Cog):
 
     # for the card big money
     @commands.command(aliases=['big', 'money', 'bigmoney'])
-    async def whammy(self, ctx, number):
+    async def whammy(self, ctx:commands.Context, number):
         try:
             number = int(number)
         except:
@@ -99,7 +99,7 @@ class SpecificCardsCog(commands.Cog):
 
     # for the card ballsjr's druidic vow
     @commands.command()
-    async def vow(self, ctx, cost):
+    async def vow(self, ctx:commands.Context, cost):
         try:
             json = await getScryfallJson("https://api.scryfall.com/cards/random?q=mana%3D" + cost)
             await sendImage(await getImageFromJson(json), ctx)
@@ -108,7 +108,7 @@ class SpecificCardsCog(commands.Cog):
 
     # for the card stormstorm
     @commands.command(aliases=['stormstorm'])
-    async def storm(self, ctx, number):
+    async def storm(self, ctx:commands.Context, number):
         stormCards = [
             "https://img.scryfall.com/cards/normal/front/f/f/ff301010-c9c9-4abb-9bf2-78d123cff292.jpg",
             "https://img.scryfall.com/cards/normal/front/f/f/ff301010-c9c9-4abb-9bf2-78d123cff292.jpg",
@@ -136,7 +136,7 @@ class SpecificCardsCog(commands.Cog):
 
     # for the card keyword warp
     @commands.command(aliases=['keyword', 'warp'])
-    async def keywords(self, ctx, number):
+    async def keywords(self, ctx:commands.Context, number):
         possibleKeywords = ["Deathtouch", "Defender", "Double Strike", "First Strike", "Flash", "Flying", "Haste",
                             "Hexproof", "Indestructible", "Lifelink", "Menace", "Prowess", "Reach", "Trample",
                             "Vigilance", "Ward 1", "Absorb 1", "Afflict 1", "Afterlife 1", "Amplify 1", "Annihilator 1",
@@ -338,7 +338,7 @@ class SpecificCardsCog(commands.Cog):
 
     # for the card wrath of pod
     @commands.command()
-    async def podcast(self, ctx, number):
+    async def podcast(self, ctx:commands.Context, number):
         podSentence = ["When @p said @c had good flavor, I lost all respect for them",
                        "The next big mechanic is Devotion to @k.", "@p 2024",
                        "@p is a @s shill! Why do you think they gave @o a good grade?",
@@ -478,7 +478,7 @@ class SpecificCardsCog(commands.Cog):
 
     # for the card pyrohyperspasm
     @commands.command()
-    async def pyrohyperspasm(self, ctx, number, buttPlug=False, *creatures):
+    async def pyrohyperspasm(self, ctx:commands.Context, number, buttPlug=False, *creatures):
         try:
             number = int(number)
         except:
@@ -583,7 +583,7 @@ class SpecificCardsCog(commands.Cog):
 
     # for the card ballsjrs ultimate curvetopper
     @commands.command()
-    async def topper(self, ctx, amount):
+    async def topper(self, ctx:commands.Context, amount):
         if int(amount) > 10:
             await ctx.send("max is 10")
             return
@@ -734,7 +734,7 @@ class SpecificCardsCog(commands.Cog):
 
     # for the card department of homelands security
     @commands.command()
-    async def homelands(self, ctx, cost):
+    async def homelands(self, ctx:commands.Context, cost):
         try:
             homelandsJson = await getScryfallJson(
                 "https://api.scryfall.com/cards/random?q=%28type%3Aartifact+OR+type%3Acreature+OR+type%3Aenchantment%29+set%3Ahml+cmc%3D" + cost)

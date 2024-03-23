@@ -1,10 +1,9 @@
 import asyncio
 from datetime import date, datetime
-import io
 import os
 import random
 import aiohttp
-from discord import  Member, RawReactionActionEvent, Role
+from discord import  Member, RawReactionActionEvent, Role, Thread
 import discord
 from discord.ext import commands
 from discord.message import Message
@@ -52,11 +51,11 @@ class LifecycleCog(commands.Cog):
         
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload:RawReactionActionEvent):
-        global log
+        # global log
         if payload.channel_id == hc_constants.SUBMISSIONS_CHANNEL:
             serv = self.bot.get_guild(hc_constants.SERVER_ID)
             user = serv.get_member(payload.user_id)
-            log += f"{payload.message_id}: Removed {payload.emoji.name} from {payload.user_id} ({user.name}|{user.nick}) at {datetime.now()}\n"
+            # log += f"{payload.message_id}: Removed {payload.emoji.name} from {payload.user_id} ({user.name}|{user.nick}) at {datetime.now()}\n"
 
     @commands.Cog.listener()
     async def on_member_join(self,member:Member):
@@ -80,7 +79,7 @@ class LifecycleCog(commands.Cog):
                     return
 
     @commands.Cog.listener()
-    async def on_thread_create(thread):
+    async def on_thread_create(thread:Thread):
         try:
            await thread.join()
         except:
@@ -163,7 +162,7 @@ async def status_task(bot:commands.Bot):
         await checkErrataSubmissions(bot)
         await bot.change_presence(status = discord.Status.online, activity = discord.Game(status))
         now = datetime.now()
-        if now.hour == 5 and now.minute <= 20 and now.minute >=14:
+        if now.hour == 4 and now.minute < 5:
             nowtime = now.date()
             start = date(2024,3,16)
             days_since_starting = (nowtime - start).days
@@ -183,7 +182,8 @@ async def status_task(bot:commands.Bot):
                             try:
                                 await  postToReddit(
                                     title = f"HC4 Card of the ~day: {name}",
-                                    image_path=image_path
+                                    image_path=image_path,
+                                    flair="5778f0e4-52c0-11eb-9a1d-0ebf18b4acab"
                                 )
                             except:
                                 ...

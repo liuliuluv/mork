@@ -10,6 +10,17 @@ from datetime import date, datetime,timedelta
 
 
 
+def t():
+    print(k())
+
+t()
+
+
+def k():
+    return "12"
+
+
+
 # nammappings=[]
 
 # print("{{{{basic land".split("{{")[1:])

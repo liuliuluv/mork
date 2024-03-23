@@ -17,30 +17,27 @@ async def acceptCard(bot:commands.Bot, cardMessage:str, file:discord.File, cardN
     await cardListChannel.send( file, content = cardMessage)
 
     # this code sucks but i don't remember what the discord file object looks like
-    fileType =(re.search("\.([^.]*)$",file.filename).group())
-
-    print('file',file)
-
+    fileType = re.search("\.([^.]*)$",file.filename).group()
     image_path = f'tempImages/{cardName}{fileType}'
 
     with open(image_path, 'wb') as out: ## Open temporary file as bytes
         out.write(file.fp.read())  ## Read bytes into file
 
-        try:
-            await  postToReddit(
-                image_path,
-                title = f"{cardMessage} was accepted!",
-                flair = hc_constants.ACCEPTED_FLAIR
-            )
-        except:
-            ...
+        # There used to be a try/catch here, but it turned out that reddit was not the flakiest part here. it was llllll
+        await postToReddit(
+            image_path,
+            title = f"{cardMessage} was accepted!",
+            flair = hc_constants.ACCEPTED_FLAIR
+        )
 
         google_drive_file_id = uploadToDrive(image_path)
-        imageUrl = getDriveUrl(google_drive_file_id)
+
         os.remove(image_path)
 
-        allCardNames = cardSheetUnapproved.col_values(1)
+        imageUrl = getDriveUrl(google_drive_file_id)
 
+
+        allCardNames = cardSheetUnapproved.col_values(1)
         newCard = True
         if cardName in allCardNames and cardName != "":
             dbRowIndex = allCardNames.index(cardName) + 1

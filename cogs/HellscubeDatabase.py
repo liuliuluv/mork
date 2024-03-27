@@ -1,4 +1,5 @@
 import random
+import re
 import discord
 from discord.ext import commands
 from random import randrange
@@ -20,7 +21,6 @@ cardsDataSearch = cardSheetSearch.col_values(2)
 
 client = discord.Client(intents=intents)
 
-
 def genSide(stats):
   cost = stats[0]
   if stats[1] != "":
@@ -36,9 +36,11 @@ def genSide(stats):
   toughness = 0
   loyalty = 0
   if stats[4] != "" and stats[4] != " ":
-    power = int(stats[4])
+    newPower = re.sub(r'[^\d]', '', stats[4])
+    power = int(newPower if newPower != "" else "0")
   if stats[5] != "" and stats[5] != " ":
-    toughness = int(stats[5])
+    newToughness = re.sub(r'[^\d]', '', stats[5])
+    toughness = int(newToughness if newToughness != "" else "0")
   if stats[6] != "" and stats[6] != " ":
     loyalty = int(stats[6])
   text = stats[7]
@@ -73,9 +75,11 @@ for i in cardsDataSearch:
       sides.append(genSide(stats[27:]))
     if stats[38] != "" and stats[38] != " ":
       sides.append(genSide(stats[36:]))
+    if "ghtbear" in name:
+       print('found',name)
     cardList.append(cardSearch(name, img, creator, cmc, colors, sides, cardset, legality, rulings))
-  except:
-    ...
+  except Exception as e:
+    print(f"couldn't parse {i}",e)
 
 
 class HellscubeDatabaseCog(commands.Cog):

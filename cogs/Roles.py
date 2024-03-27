@@ -130,11 +130,9 @@ class RolesCog(commands.Cog):
             role = get(ctx.message.author.guild.roles, id=int(roleId[roleName]))
             pp.pprint(ctx.author.roles)
             if role in ctx.author.roles:
-                print("got one")
                 await ctx.author.remove_roles(role)
                 await ctx.send("Removed the role " + role.name + " from " + str(ctx.message.author))
                 return
-            print("got two")
             await ctx.author.add_roles(role)
             await ctx.send("Gave " + str(ctx.message.author) + " the role " + role.name)
             return

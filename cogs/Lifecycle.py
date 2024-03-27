@@ -32,7 +32,7 @@ class LifecycleCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        global log
+        # global log
         print(f'{self.bot.user.name} has connected to Discord!')
         nameList = cardSheet.col_values(1)[3:]
         imgList = cardSheet.col_values(2)[3:]
@@ -44,9 +44,9 @@ class LifecycleCog(commands.Cog):
         self.bot.loop.create_task(status_task(self.bot))
         while True:
             await asyncio.sleep(ONE_HOUR)
-            with open("log.txt", 'a', encoding='utf8') as file:
-                file.write(log)
-                log = ""
+            # with open("log.txt", 'a', encoding='utf8') as file:
+            #     file.write(log)
+            #     log = ""
         
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload:RawReactionActionEvent):
@@ -78,7 +78,7 @@ class LifecycleCog(commands.Cog):
                     return
 
     @commands.Cog.listener()
-    async def on_thread_create(thread:Thread):
+    async def on_thread_create(self, thread:Thread):
         try:
            await thread.join()
         except:
@@ -153,7 +153,7 @@ FIVE_MINUTES = 300
 
 async def status_task(bot:commands.Bot):
     while True:
-        creator = random.choice(cardSheet.col_values(3)[4:])
+        # creator = random.choice(cardSheet.col_values(3)[4:])
         status = random.choice(hc_constants.statusList)
         # print(status)
         await checkSubmissions(bot)

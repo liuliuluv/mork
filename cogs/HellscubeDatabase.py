@@ -75,8 +75,7 @@ for i in cardsDataSearch:
       sides.append(genSide(stats[36:]))
     cardList.append(cardSearch(name, img, creator, cmc, colors, sides, cardset, legality, rulings))
   except:
-    print(i)
-    print(i.lower().split("%&%&%"))
+    ...
 
 
 class HellscubeDatabaseCog(commands.Cog):
@@ -122,12 +121,12 @@ class HellscubeDatabaseCog(commands.Cog):
 
     @commands.command()
     async def creator(self, channel, *cardName):
-        name = await cardNameRequest(' '.join(cardName).lower())
+        name = cardNameRequest(' '.join(cardName).lower())
         await channel.send(allCards[name].getName() + " created by: " + allCards[name].getCreator())
     
     @commands.command()
     async def rulings(self, channel, *cardName):
-        name = await cardNameRequest(' '.join(cardName).lower())
+        name = cardNameRequest(' '.join(cardName).lower())
         message = "something went wrong!"
         for card in cardList:
             if card.name().lower() == name:
@@ -143,7 +142,7 @@ class HellscubeDatabaseCog(commands.Cog):
 
     @commands.command()
     async def info(self, channel, *cardName):
-        name = await cardNameRequest(' '.join(cardName).lower())
+        name = cardNameRequest(' '.join(cardName).lower())
         message = "something went wrong!"
         for card in cardList:
             if card.name().lower() == name:

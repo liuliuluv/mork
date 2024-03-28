@@ -160,7 +160,8 @@ async def status_task(bot:commands.Bot):
         await checkErrataSubmissions(bot)
         await bot.change_presence(status = discord.Status.online, activity = discord.Game(status))
         now = datetime.now()
-        if now.hour == 4 and now.minute < 5:
+        print(f"time is {now}")
+        if now.hour == 4 and now.minute <= 5:
             nowtime = now.date()
             start = date(2024,3,16)
             days_since_starting = (nowtime - start).days

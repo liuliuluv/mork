@@ -75,8 +75,8 @@ for i in cardsDataSearch:
       sides.append(genSide(stats[27:]))
     if stats[38] != "" and stats[38] != " ":
       sides.append(genSide(stats[36:]))
-    if "ghtbear" in name:
-       print('found',name)
+    # if "ghtbear" in name:
+    #    print('found',name)
     cardList.append(cardSearch(name, img, creator, cmc, colors, sides, cardset, legality, rulings))
   except Exception as e:
     print(f"couldn't parse {i}",e)
@@ -119,7 +119,6 @@ class HellscubeDatabaseCog(commands.Cog):
 
     @commands.command(name="random")
     async def randomCard(self,channel):
-        print(allCards)
         card = allCards[random.choice(list(allCards.keys()))]
         await send_image(card.getImg(), card.getName(), channel)
 
@@ -149,6 +148,8 @@ class HellscubeDatabaseCog(commands.Cog):
         name = cardNameRequest(' '.join(cardName).lower())
         message = "something went wrong!"
         for card in cardList:
+            if "ightbear" in card.name():
+                print(f".{name}.{card.name()}")
             if card.name().lower() == name:
                 creator = card.creator()
                 cardset = card.cardset()

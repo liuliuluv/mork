@@ -16,24 +16,27 @@ async def acceptCard(bot:commands.Bot, cardMessage:str, file:discord.File, cardN
 
     cardListChannel = bot.get_channel(hc_constants.FOUR_ONE_CARD_LIST_CHANNEL)
 
-    await cardListChannel.send( file, content = cardMessage)
+    await cardListChannel.send( file = file, content = cardMessage)
 
 # <CIMultiDictProxy('Content-Type': 'image/jpeg', 'Vary': 'Origin', 'Access-Control-Allow-Origin': '*', 'Timing-Allow-Origin': '*', 'Access-Control-Expose-Headers': 'Content-Length', 'Etag': '"v1"', 'Expires': 'Fri, 01 Jan 1990 00:00:00 GMT', 'Cache-Control': 'private, max-age=86400, no-transform', 'Content-Disposition': 'inline;filename="Ancestral Loan.jpg"', 'X-Content-Type-Options': 'nosniff', 'Date': 'Sun, 24 Mar 2024 04:03:48 GMT', 'Server': 'fife', 'Content-Length': '238997', 'X-XSS-Protection': '0')>
 
     # this code sucks but i don't remember what the discord file object looks like
     fileType = re.search("\.([^.]*)$", file.filename).group()
 
-    image_path = f'tempImages/{cardName}{fileType}'
+    image_path = f'tempImages/{cardName.replace("/","|")}{fileType}'
 
     with open(image_path, 'wb') as out: ## Open temporary file as bytes
         out.write(file.fp.read())  ## Read bytes into file
 
-        # There used to be a try/catch here, but it turned out that reddit was not the flakiest part here. it was llllll
-        await postToReddit(
-            image_path,
-            title = f"{cardMessage} was accepted!",
-            flair = hc_constants.ACCEPTED_FLAIR
-        )
+        try:
+            # There used to be a try/catch here, but it turned out that reddit was not the flakiest part here. it was llllll
+            await postToReddit(
+                image_path,
+                title = f"{cardMessage} was accepted!",
+                flair = hc_constants.ACCEPTED_FLAIR
+            )
+        except Exception as e:
+            print(e)
 
         google_drive_file_id = uploadToDrive(image_path)
 

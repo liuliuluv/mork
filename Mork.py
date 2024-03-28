@@ -14,10 +14,10 @@ class MyBot(commands.Bot):
         initial_extensions = [
             'cogs.General',
             'cogs.HellscubeDatabase',
-            'cogs.Lifecycle',
-            'cogs.Quotes',
-            'cogs.Roles',
-            'cogs.SpecificCards'
+             'cogs.Lifecycle',
+             'cogs.Quotes',
+             'cogs.Roles',
+         'cogs.SpecificCards'
             # 'cogs.Misc'
           ]
         for i in initial_extensions:
@@ -74,7 +74,7 @@ async def compileveto(ctx:commands.Context):
     epicCatchphrases = ["If processing lasts more than 5 minutes, consult your doctor.", "on it, yo.", "ya ya gimme a sec", "processing...", "You're not the boss of me", "ok, 'DAD'", "but what of the children?", "?", "workin' on it!", "on it!", "can do, cap'n!", "raseworter pro tip: run it back, but with less 'tude next time.", "who? oh yeah sure thing b0ss", "how about no for a change?", "CAAAAAAAAAAAAAAN DO!", "i'm afraid i can't let you do that.", "i mean like, if you say so, man", "WOOOOOOOOOOOOOOOOOOOOOOOOOOOO", "*nuzzles u*"]
     await ctx.send(random.choice(epicCatchphrases))
     messages = vetoChannel.history(after=twoWeekAgo, limit=None)
-    print(messages)
+   
     if messages is None:
         return
     messages = [message async for message in messages]
@@ -166,13 +166,13 @@ async def compileveto(ctx:commands.Context):
     await vetoDiscussionChannel.send(content= f"!! VETO POLLS HAVE BEEN PROCESSED !!")
 
     # had to use format because python doesn't like \n inside template brackets
-    if(acceptedCards.__le__() > 0):
+    if(acceptedCards.__len__() > 0):
         await vetoDiscussionChannel.send(content = "\n\nACCEPTED CARDS: \n{0}".format("\n".join(acceptedCards)))
-    if(errataedCards.__le__() > 0):
+    if(errataedCards.__len__() > 0):
         await vetoDiscussionChannel.send(content = "\n\nNEEDS ERRATA: \n{0}".format("\n".join(errataedCards)))
-    if(vetoedCards.__le__() > 0):
+    if(vetoedCards.__len__() > 0):
         await vetoDiscussionChannel.send(content = "\n\nVETOED: \n{0}".format("\n".join(vetoedCards)))
-    if(vetoHell.__le__() > 0):
+    if(vetoHell.__len__() > 0):
         await vetoDiscussionChannel.send(content = "\n\nVETO HELL: \n{0}".format("\n".join(vetoHell)))
 
 

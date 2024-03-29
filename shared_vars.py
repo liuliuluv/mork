@@ -1,4 +1,4 @@
-from typing import Mapping
+from typing import Dict, Mapping
 import discord
 from oauth2client.service_account import ServiceAccountCredentials
 import gspread
@@ -8,7 +8,7 @@ from CardClasses import Card
 import hc_constants
 
 
-allCards:Mapping[str,Card] = {}
+allCards:Dict[str,Card] = {}
 
 intents = discord.Intents.default()
 intents.members = True

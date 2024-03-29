@@ -17,10 +17,10 @@ class MyBot(commands.Bot):
         initial_extensions = [
             'cogs.General',
             'cogs.HellscubeDatabase',
-             'cogs.Lifecycle',
-             'cogs.Quotes',
-             'cogs.Roles',
-         'cogs.SpecificCards'
+            'cogs.Lifecycle',
+            'cogs.Quotes',
+            'cogs.Roles',
+            'cogs.SpecificCards'
             #   'cogs.Misc'
           ]
         for i in initial_extensions:

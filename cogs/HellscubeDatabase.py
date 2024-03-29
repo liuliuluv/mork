@@ -6,13 +6,14 @@ from discord.ext import commands
 from random import randrange
 
 from datetime import datetime, timezone, timedelta
-from CardClasses import Side, cardSearch
+from CardClasses import Card, Side, cardSearch
 from cardNameRequest import cardNameRequest
 import hc_constants
-from sendImage import send_image
+from printCardImages import sendImageReply
 
 
-from shared_vars import intents,allCards,googleClient
+
+from shared_vars import intents,allCards,googleClient,cardSheet
 
 cardList:list[cardSearch]=[]
 
@@ -87,6 +88,17 @@ class HellscubeDatabaseCog(commands.Cog):
     def __init__(self, bot:commands.Bot):
         self.bot = bot
         
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        # global log
+        nameList = cardSheet.col_values(1)[3:]
+        imgList = cardSheet.col_values(2)[3:]
+        creatorList = cardSheet.col_values(3)[3:]
+        global allCards # Need to modify shared allCards object
+        
+        for i in range(len(nameList)):
+            allCards[nameList[i].lower()] = Card(nameList[i], imgList[i], creatorList[i])
     
     # okay not technically a DB command
     @commands.command()
@@ -119,9 +131,12 @@ class HellscubeDatabaseCog(commands.Cog):
             await channel.invoke(command, num)
 
     @commands.command(name="random")
-    async def randomCard(self,channel):
+    async def randomCard(self,ctx:commands.Context):
         card = allCards[random.choice(list(allCards.keys()))]
-        await send_image(card.getImg(), card.getName(), channel)
+
+        await sendImageReply(url=card.getImg(),cardname = card.getName(),message=ctx.message)
+     
+
 
     @commands.command()
     async def creator(self, channel, *cardName):

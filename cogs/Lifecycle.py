@@ -9,7 +9,7 @@ import discord
 from discord.ext import commands
 from discord.message import Message
 from discord.utils import get
-from CardClasses import Card
+
 
 from checkErrataSubmissions import checkErrataSubmissions
 from checkSubmissions import checkSubmissions
@@ -19,7 +19,7 @@ import hc_constants
 from is_mork import is_mork, reasonableCard
 from printCardImages import print_card_images
 from reddit_functions import postToReddit
-from shared_vars import intents,cardSheet,allCards
+from shared_vars import intents
 
 ONE_HOUR = 3600
 
@@ -35,13 +35,6 @@ class LifecycleCog(commands.Cog):
     async def on_ready(self):
         # global log
         print(f'{cast(ClientUser,self.bot.user).name} has connected to Discord!')
-        nameList = cardSheet.col_values(1)[3:]
-        imgList = cardSheet.col_values(2)[3:]
-        creatorList = cardSheet.col_values(3)[3:]
-        global allCards # Need to modify shared allCards object
-        
-        for i in range(len(nameList)):
-            allCards[nameList[i].lower()] = Card(nameList[i], imgList[i], creatorList[i])
         self.bot.loop.create_task(status_task(self.bot))
         while True:
             await asyncio.sleep(ONE_HOUR)
@@ -98,10 +91,10 @@ class LifecycleCog(commands.Cog):
             await message.add_reaction(hc_constants.VOTE_DOWN)
         if message.channel.id == hc_constants.VETO_CHANNEL:
             await message.add_reaction(hc_constants.VOTE_UP)
-            await message.add_reaction(cast(Emoji,self.bot.get_emoji(hc_constants.CIRION_SPELLING)))
+            await message.add_reaction(cast(Emoji, self.bot.get_emoji(hc_constants.CIRION_SPELLING)))
             await message.add_reaction(hc_constants.VOTE_DOWN)
-            await message.add_reaction(cast(Emoji,self.bot.get_emoji(hc_constants.MANA_GREEN)))
-            await message.add_reaction(cast(Emoji,self.bot.get_emoji(hc_constants.MANA_WHITE)))
+            await message.add_reaction(cast(Emoji, self.bot.get_emoji(hc_constants.MANA_GREEN)))
+            await message.add_reaction(cast(Emoji, self.bot.get_emoji(hc_constants.MANA_WHITE)))
             await message.add_reaction("🤮")
             await message.add_reaction("🤔")
             thread = await message.create_thread(name = message.content[0:99])
@@ -162,7 +155,7 @@ async def status_task(bot:commands.Bot):
         await bot.change_presence(status = discord.Status.online, activity = discord.Game(status))
         now = datetime.now()
         print(f"time is {now}")
-        if now.hour == 4 and now.minute <= 5:
+        if now.hour == 4 and now.minute <= 4:
             nowtime = now.date()
             start = date(2024,3,13)
             days_since_starting = (nowtime - start).days
@@ -182,8 +175,8 @@ async def status_task(bot:commands.Bot):
                             try:
                                 await  postToReddit(
                                     title = f"HC4 Card of the ~day: {name}",
-                                    image_path=image_path,
-                                    flair="5778f0e4-52c0-11eb-9a1d-0ebf18b4acab"
+                                    image_path = image_path,
+                                    flair = "5778f0e4-52c0-11eb-9a1d-0ebf18b4acab"
                                 )
                             except:
                                 ...

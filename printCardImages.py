@@ -25,7 +25,7 @@ async def print_card_images(message:Message):
             await sendImageReply(allCards[post].getImg(), allCards[post].getName(), message)
 
 
-async def sendImageReply(url, cardname:str, message:Message):
+async def sendImageReply(url:str, cardname:str, message:Message):
     async with aiohttp.ClientSession() as session:
       async with session.get(url) as resp:
         if resp.status != 200:

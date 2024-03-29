@@ -2,8 +2,9 @@ import asyncio
 from datetime import date, datetime
 import os
 import random
+from typing import cast
 import aiohttp
-from discord import  Member, RawReactionActionEvent, Role, Thread
+from discord import  ClientUser, Emoji, Guild, Member, RawReactionActionEvent, Role, TextChannel, Thread
 import discord
 from discord.ext import commands
 from discord.message import Message
@@ -33,7 +34,7 @@ class LifecycleCog(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         # global log
-        print(f'{self.bot.user.name} has connected to Discord!')
+        print(f'{cast(ClientUser,self.bot.user).name} has connected to Discord!')
         nameList = cardSheet.col_values(1)[3:]
         imgList = cardSheet.col_values(2)[3:]
         creatorList = cardSheet.col_values(3)[3:]
@@ -48,12 +49,12 @@ class LifecycleCog(commands.Cog):
             #     file.write(log)
             #     log = ""
         
-    @commands.Cog.listener()
-    async def on_raw_reaction_remove(self, payload:RawReactionActionEvent):
-        # global log
-        if payload.channel_id == hc_constants.SUBMISSIONS_CHANNEL:
-            serv = self.bot.get_guild(hc_constants.SERVER_ID)
-            user = serv.get_member(payload.user_id)
+    # @commands.Cog.listener()
+    # async def on_raw_reaction_remove(self, payload:RawReactionActionEvent):
+    #     # global log
+    #     if payload.channel_id == hc_constants.SUBMISSIONS_CHANNEL:
+    #         serv = self.bot.get_guild(hc_constants.SERVER_ID)
+           # user = serv.get_member(payload.user_id)
             # log += f"{payload.message_id}: Removed {payload.emoji.name} from {payload.user_id} ({user.name}|{user.nick}) at {datetime.now()}\n"
 
     @commands.Cog.listener()
@@ -63,7 +64,7 @@ class LifecycleCog(commands.Cog):
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, reaction:RawReactionActionEvent):
         if str(reaction.emoji) == hc_constants.DELETE and not is_mork(reaction.user_id):
-            guild = self.bot.get_guild(reaction.guild_id)
+            guild = cast(Guild, self.bot.get_guild(cast(int,reaction.guild_id)))
             channel = guild.get_channel(reaction.channel_id)
             message = await channel.fetch_message(reaction.message_id)
             if not is_mork(message.author.id):
@@ -97,14 +98,14 @@ class LifecycleCog(commands.Cog):
             await message.add_reaction(hc_constants.VOTE_DOWN)
         if message.channel.id == hc_constants.VETO_CHANNEL:
             await message.add_reaction(hc_constants.VOTE_UP)
-            await message.add_reaction(self.bot.get_emoji(hc_constants.CIRION_SPELLING))
+            await message.add_reaction(cast(Emoji,self.bot.get_emoji(hc_constants.CIRION_SPELLING)))
             await message.add_reaction(hc_constants.VOTE_DOWN)
-            await message.add_reaction(self.bot.get_emoji(hc_constants.MANA_GREEN))
-            await message.add_reaction(self.bot.get_emoji(hc_constants.MANA_WHITE))
+            await message.add_reaction(cast(Emoji,self.bot.get_emoji(hc_constants.MANA_GREEN)))
+            await message.add_reaction(cast(Emoji,self.bot.get_emoji(hc_constants.MANA_WHITE)))
             await message.add_reaction("🤮")
             await message.add_reaction("🤔")
             thread = await message.create_thread(name = message.content[0:99])
-            role:Role = get(message.author.guild.roles, id = hc_constants.VETO_COUNCIL_MAYBE)
+            role = cast(Role, get(cast(Member, message.author).guild.roles, id = hc_constants.VETO_COUNCIL_MAYBE))
             await thread.send(role.mention)
         if message.channel.id == hc_constants.FOUR_ZERO_ERRATA_SUBMISSIONS_CHANNEL:
             if "@" in message.content:
@@ -124,9 +125,9 @@ class LifecycleCog(commands.Cog):
                 return # no pings allowed
             file = await message.attachments[0].to_file()
             if reasonableCard():
-                vetoChannel = self.bot.get_channel(hc_constants.VETO_CHANNEL)
-                acceptedChannel = self.bot.get_channel(hc_constants.SUBMISSIONS_DISCUSSION_CHANNEL)
-                logChannel = self.bot.get_channel(hc_constants.MORK_SUBMISSIONS_LOGGING_CHANNEL)
+                vetoChannel = cast(TextChannel, self.bot.get_channel(hc_constants.VETO_CHANNEL))
+                acceptedChannel = cast(TextChannel, self.bot.get_channel(hc_constants.SUBMISSIONS_DISCUSSION_CHANNEL))
+                logChannel = cast(TextChannel, self.bot.get_channel(hc_constants.MORK_SUBMISSIONS_LOGGING_CHANNEL))
                 acceptContent = message.content + " was accepted"
                 mention = f'<@{str(message.raw_mentions[0])}>'
                 accepted_message_no_mentions = message.content.replace(mention, message.mentions[0].name)
@@ -163,7 +164,7 @@ async def status_task(bot:commands.Bot):
         print(f"time is {now}")
         if now.hour == 4 and now.minute <= 5:
             nowtime = now.date()
-            start = date(2024,3,16)
+            start = date(2024,3,13)
             days_since_starting = (nowtime - start).days
             cardOffset = 608 - days_since_starting
             if cardOffset >= 0:
@@ -175,7 +176,7 @@ async def status_task(bot:commands.Bot):
                     async with session.get(url) as resp:
                         if resp.status == 200:
                             print(resp)                       
-                            image_path = f'tempImages/{name}'
+                            image_path = f'tempImages/{name.replace("/", "|")}'
                             with open(image_path, 'wb') as out: ## Open temporary file as bytes
                                 out.write(await resp.read())  ## Read bytes into file
                             try:

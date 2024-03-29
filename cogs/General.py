@@ -1,13 +1,12 @@
 import pprint as pp
+from typing import cast
 import discord
 from discord.ext import commands
 from shared_vars import drive
 import hc_constants
 from discord.utils import get
 
-
-global blueRed
-blueRed = False
+BlueRed = False
 log = ""
 
 custom_deliminator="$%$%$"
@@ -50,7 +49,7 @@ class GeneralCog(commands.Cog):
 
     @commands.command()
     async def getMessage(self, ctx:commands.Context, id):
-        subChannel = self.bot.get_channel(hc_constants.SUBMISSIONS_CHANNEL)
+        subChannel =cast(discord.TextChannel, self.bot.get_channel(hc_constants.SUBMISSIONS_CHANNEL))
         message = await subChannel.fetch_message(id)
         await ctx.send(message.jump_url)
 
@@ -92,7 +91,7 @@ class GeneralCog(commands.Cog):
                     if messages[i].content[0] != "(":
                         card = messages[i].content + " " + card
             card = card.replace("/n", "\n")
-            cubeChannel = self.bot.get_channel(hc_constants.CUBE_CHANNEL)
+            cubeChannel = cast(discord.TextChannel, self.bot.get_channel(hc_constants.CUBE_CHANNEL))
             await cubeChannel.send(card)
             await ctx.channel.send(card)
 
@@ -152,8 +151,8 @@ class GeneralCog(commands.Cog):
                 result += f"{games[i]: {str(amount[i])}}\n"
             await ctx.send(result)
         if mode == "remove":
-            role = get(ctx.message.author.guild.roles, id=int(631288945044357141))
-            if role in ctx.author.roles:
+            role = get(cast(discord.Member, ctx.message.author).guild.roles, id=int(631288945044357141))
+            if role in cast(discord.Member, ctx.author).roles:
                 if game.lower() in games:
                     file2 = drive.CreateFile({'id':hc_constants.GAME_NIGHT_PEOPLE})
                     gnPeople = file2.GetContentString()

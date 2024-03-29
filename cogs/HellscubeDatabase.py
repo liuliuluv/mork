@@ -1,5 +1,6 @@
 import random
 import re
+from typing import cast
 import discord
 from discord.ext import commands
 from random import randrange
@@ -17,7 +18,7 @@ cardList:list[cardSearch]=[]
 
 cardSheetSearch = googleClient.open("Hellscube Database").worksheet("Database Bot Read")
 
-cardsDataSearch = cardSheetSearch.col_values(2)
+cardsDataSearch = cast(list[str], cardSheetSearch.col_values(2))
 
 client = discord.Client(intents=intents)
 
@@ -105,7 +106,7 @@ class HellscubeDatabaseCog(commands.Cog):
         intDelta = (delta.days * 24 * 60 * 60) + delta.seconds
         randomSecond = randrange(intDelta)
         randomDate = subStart + timedelta(seconds=randomSecond)
-        subChannel = self.bot.get_channel(hc_constants.SUBMISSIONS_CHANNEL)
+        subChannel = (self.bot.get_channel(hc_constants.SUBMISSIONS_CHANNEL))
         subHistory = subChannel.history(around = randomDate)
         subHistory = [message async for message in subHistory]
         randomNum = randrange(1, len(subHistory)) - 1

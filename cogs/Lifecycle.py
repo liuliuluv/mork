@@ -58,7 +58,7 @@ class LifecycleCog(commands.Cog):
     async def on_raw_reaction_add(self, reaction:RawReactionActionEvent):
         if str(reaction.emoji) == hc_constants.DELETE and not is_mork(reaction.user_id):
             guild = cast(Guild, self.bot.get_guild(cast(int,reaction.guild_id)))
-            channel = guild.get_channel(reaction.channel_id)
+            channel = cast(TextChannel, guild.get_channel(reaction.channel_id))
             message = await channel.fetch_message(reaction.message_id)
             if not is_mork(message.author.id):
                 return
@@ -66,7 +66,7 @@ class LifecycleCog(commands.Cog):
                 await message.delete()
                 return
             if message.reference:
-                messageReference = await channel.fetch_message(message.reference.message_id)
+                messageReference = await channel.fetch_message(cast(int, message.reference.message_id))
                 if reaction.member == messageReference.author:
                     await message.delete()
                     return
@@ -91,10 +91,10 @@ class LifecycleCog(commands.Cog):
             await message.add_reaction(hc_constants.VOTE_DOWN)
         if message.channel.id == hc_constants.VETO_CHANNEL:
             await message.add_reaction(hc_constants.VOTE_UP)
-            await message.add_reaction(cast(Emoji, self.bot.get_emoji(hc_constants.CIRION_SPELLING)))
+            await message.add_reaction(cast(Emoji, self.bot.get_emoji(hc_constants.CIRION_SPELLING))) # Eratta
             await message.add_reaction(hc_constants.VOTE_DOWN)
-            await message.add_reaction(cast(Emoji, self.bot.get_emoji(hc_constants.MANA_GREEN)))
-            await message.add_reaction(cast(Emoji, self.bot.get_emoji(hc_constants.MANA_WHITE)))
+            await message.add_reaction(cast(Emoji, self.bot.get_emoji(hc_constants.MANA_GREEN))) # too strong
+            await message.add_reaction(cast(Emoji, self.bot.get_emoji(hc_constants.MANA_WHITE))) # too weak
             await message.add_reaction("🤮")
             await message.add_reaction("🤔")
             thread = await message.create_thread(name = message.content[0:99])
@@ -125,12 +125,12 @@ class LifecycleCog(commands.Cog):
                 mention = f'<@{str(message.raw_mentions[0])}>'
                 accepted_message_no_mentions = message.content.replace(mention, message.mentions[0].name)
                 copy = await message.attachments[0].to_file()
-                await vetoChannel.send(content=accepted_message_no_mentions, file=copy)
+                await vetoChannel.send(content = accepted_message_no_mentions, file = copy)
                 copy2 = await message.attachments[0].to_file()
                 logContent = f"{acceptContent}, message id: {message.id}, upvotes: 0, downvotes: 0, magic: true"
                 await acceptedChannel.send(content = "✨✨ {acceptContent} ✨✨")
                 await acceptedChannel.send(content = "", file = file)
-                await logChannel.send(content=logContent, file = copy2)
+                await logChannel.send(content = logContent, file = copy2)
             else:
                 sentMessage = await message.channel.send(content = f"{message.content} by {message.author.mention}" , file = file)
                 await sentMessage.add_reaction(hc_constants.VOTE_UP)
@@ -145,7 +145,7 @@ async def setup(bot:commands.Bot):
 
 FIVE_MINUTES = 300
 
-async def status_task(bot:commands.Bot):
+async def status_task(bot: commands.Bot):
     while True:
         # creator = random.choice(cardSheet.col_values(3)[4:])
         status = random.choice(hc_constants.statusList)
@@ -161,7 +161,7 @@ async def status_task(bot:commands.Bot):
             days_since_starting = (nowtime - start).days
             cardOffset = 608 - days_since_starting
             if cardOffset >= 0:
-                cards = searchFor({"cardset":"hc4"})
+                cards = searchFor({"cardset": "hc4"})
                 card = cards[cardOffset]
                 name = card.name()
                 url = card.img()

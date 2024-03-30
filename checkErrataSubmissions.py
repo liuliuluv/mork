@@ -9,8 +9,8 @@ async def checkErrataSubmissions(bot:commands.Bot):
     subChannel = bot.get_channel(hc_constants.FOUR_ZERO_ERRATA_SUBMISSIONS_CHANNEL)
     acceptedChannel = bot.get_channel(hc_constants.FOUR_ZERO_ERRATA_ACCEPTED_CHANNEL)
     timeNow = datetime.now(timezone.utc)
-    oneWeek = timeNow + timedelta(weeks=-1)
-    messages = subChannel.history(after=oneWeek, limit=None)
+    oneWeek = timeNow + timedelta(weeks = -1)
+    messages = subChannel.history(after = oneWeek, limit = None)
     if messages is None:
         return
     messages = [message async for message in messages]

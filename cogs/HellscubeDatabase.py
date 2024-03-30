@@ -92,7 +92,7 @@ class HellscubeDatabaseCog(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         # global log
-        nameList = cardSheet.col_values(1)[3:]
+        nameList = cast(list[str], cardSheet.col_values(1)[3:])
         imgList = cardSheet.col_values(2)[3:]
         creatorList = cardSheet.col_values(3)[3:]
         global allCards # Need to modify shared allCards object
@@ -118,7 +118,7 @@ class HellscubeDatabaseCog(commands.Cog):
         intDelta = (delta.days * 24 * 60 * 60) + delta.seconds
         randomSecond = randrange(intDelta)
         randomDate = subStart + timedelta(seconds=randomSecond)
-        subChannel = (self.bot.get_channel(hc_constants.SUBMISSIONS_CHANNEL))
+        subChannel = self.bot.get_channel(hc_constants.SUBMISSIONS_CHANNEL)
         subHistory = subChannel.history(around = randomDate)
         subHistory = [message async for message in subHistory]
         randomNum = randrange(1, len(subHistory)) - 1

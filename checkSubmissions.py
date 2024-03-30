@@ -34,37 +34,40 @@ async def checkSubmissions(bot:commands.Bot):
             downCount = downvote.count
             messageAge = timeNow - messageEntry.created_at
             # card was voted in
-        if (upCount - downCount) > 24 and len(messageEntry.attachments) > 0 and messageAge >= timedelta(days=1) and is_mork(messageEntry.author.id):
-            if downCount == 1:
-                user = await bot.fetch_user(hc_constants.LLLLLL) # If a message would be accepted, but there's only a single downvote, need llllll to add another downvote
-                await user.send("Verify " + messageEntry.jump_url)
+            if ((upCount - downCount) > 24
+                and len(messageEntry.attachments) > 0
+                and messageAge >= timedelta(days = 1)
+                and is_mork(messageEntry.author.id)):
+                if downCount == 1:
+                    user = await bot.fetch_user(hc_constants.LLLLLL) # If a message would be accepted, but there's only a single downvote, need llllll to add another downvote
+                    await user.send("Verify " + messageEntry.jump_url)
+                    continue
+                file = await messageEntry.attachments[0].to_file()
+                acceptContent = messageEntry.content + " was accepted"
+                mention = f'<@{str(messageEntry.raw_mentions[0])}>'
+                accepted_message_no_mentions = messageEntry.content.replace(mention, messageEntry.mentions[0].name)
+                copy = await messageEntry.attachments[0].to_file()
+                vetoEntry =  await vetoChannel.send(content=accepted_message_no_mentions, file=copy)
+
+
+                await vetoEntry.add_reaction(hc_constants.VOTE_UP)
+                await vetoEntry.add_reaction(bot.get_emoji(hc_constants.CIRION_SPELLING))
+                await vetoEntry.add_reaction(hc_constants.VOTE_DOWN)
+                await vetoEntry.add_reaction(bot.get_emoji(hc_constants.MANA_GREEN))
+                await vetoEntry.add_reaction(bot.get_emoji(hc_constants.MANA_WHITE))
+                await vetoEntry.add_reaction("🤮")
+                await vetoEntry.add_reaction("🤔")
+                
+                thread = await vetoEntry.create_thread(name = vetoEntry.content[0:99])
+                role:Role = get(vetoEntry.author.guild.roles, id = hc_constants.VETO_COUNCIL_MAYBE)
+                await thread.send(role.mention)
+
+
+                copy2 = await messageEntry.attachments[0].to_file()
+                logContent = f"{acceptContent}, message id: {messageEntry.id}, upvotes: {upCount}, downvotes: {downCount}"
+                await acceptedChannel.send(content = acceptContent)
+                await acceptedChannel.send(content = "", file = file)
+                await logChannel.send(content = logContent, file = copy2)
+                await messageEntry.delete()
                 continue
-            file = await messageEntry.attachments[0].to_file()
-            acceptContent = messageEntry.content + " was accepted"
-            mention = f'<@{str(messageEntry.raw_mentions[0])}>'
-            accepted_message_no_mentions = messageEntry.content.replace(mention, messageEntry.mentions[0].name)
-            copy = await messageEntry.attachments[0].to_file()
-            vetoEntry =  await vetoChannel.send(content=accepted_message_no_mentions, file=copy)
-
-
-            await vetoEntry.add_reaction(hc_constants.VOTE_UP)
-            await vetoEntry.add_reaction(bot.get_emoji(hc_constants.CIRION_SPELLING))
-            await vetoEntry.add_reaction(hc_constants.VOTE_DOWN)
-            await vetoEntry.add_reaction(bot.get_emoji(hc_constants.MANA_GREEN))
-            await vetoEntry.add_reaction(bot.get_emoji(hc_constants.MANA_WHITE))
-            await vetoEntry.add_reaction("🤮")
-            await vetoEntry.add_reaction("🤔")
-            
-            thread = await vetoEntry.create_thread(name = vetoEntry.content[0:99])
-            role:Role = get(vetoEntry.author.guild.roles, id = hc_constants.VETO_COUNCIL_MAYBE)
-            await thread.send(role.mention)
-
-
-            copy2 = await messageEntry.attachments[0].to_file()
-            logContent = f"{acceptContent}, message id: {messageEntry.id}, upvotes: {upCount}, downvotes: {downCount}"
-            await acceptedChannel.send(content = acceptContent)
-            await acceptedChannel.send(content = "", file = file)
-            await logChannel.send(content = logContent, file = copy2)
-            await messageEntry.delete()
-            continue
     print("------done checking submissions-----")

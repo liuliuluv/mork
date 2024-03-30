@@ -60,10 +60,6 @@ async def check_cogs(ctx:commands.Context, cog_name):
         await ctx.send("Cog is unloaded")
         await bot.unload_extension(f"cogs.{cog_name}")
 
-
-
-
-
 @bot.command()
 async def compileveto(ctx: commands.Context):
     if ctx.channel.id != hc_constants.VETO_DISCUSSION_CHANNEL:
@@ -102,14 +98,9 @@ async def compileveto(ctx: commands.Context):
        
         messageAge = timeNow - messageEntry.created_at
 
-        # at this point we assume that everything is good
 
-
-        if get(messageEntry.reactions, emoji = hc_constants.ACCEPT) or get(messageEntry.reactions, emoji = hc_constants.DELETE):
-            continue # Skip this card if it has been accepted or deleted. At some point maybe drop the elif here, cause continue skips the rest of the loop
-        elif (messageAge < timedelta(days=1)):
-            ... # No judgement within the first day
-
+        if (get(messageEntry.reactions, emoji = hc_constants.ACCEPT) or get(messageEntry.reactions, emoji = hc_constants.DELETE) or messageAge < timedelta(days=1)):
+            continue # Skip cards that have been marked, or are only a day old
         # Errata needed case
         elif (errata > 4
                 and errata >= upvote
@@ -117,7 +108,7 @@ async def compileveto(ctx: commands.Context):
             errataedCards.append(getCardMessage(messageEntry.content))
 
             await messageEntry.add_reaction(hc_constants.ACCEPT)
-            thread =  cast(Guild, messageEntry.guild).get_channel_or_thread(messageEntry.id)
+            thread = cast(Guild, messageEntry.guild).get_channel_or_thread(messageEntry.id)
             if thread:
                 await cast(Thread, thread).edit(archived = True)
 
@@ -160,14 +151,16 @@ async def compileveto(ctx: commands.Context):
 
 
         # Veto case
-        elif (downvote > 4 and downvote >= upvote and downvote >= errata):
+        elif (downvote > 4
+              and downvote >= upvote
+              and downvote >= errata):
             vetoedCards.append(getCardMessage(messageEntry.content))
             await messageEntry.add_reaction(hc_constants.ACCEPT) # see ./README.md TODO: maybe use the delete emoji instead?
 
         # Veto Hell
-        elif (messageAge > timedelta(days=3)):
-            thread = cast(Thread, cast(Guild,messageEntry.guild).get_channel_or_thread(messageEntry.id))
-            role = cast(Role, get(cast(Guild,messageEntry.guild).roles, id = hc_constants.VETO_COUNCIL_MAYBE))
+        elif (messageAge > timedelta(days = 7)):
+            thread = cast(Thread, cast(Guild, messageEntry.guild).get_channel_or_thread(messageEntry.id))
+            role = cast(Role, get(cast(Guild, messageEntry.guild).roles, id = hc_constants.VETO_COUNCIL_MAYBE))
             await thread.send(role.mention)
             vetoHellCards.append(getCardMessage(messageEntry.content))
 
@@ -175,17 +168,17 @@ async def compileveto(ctx: commands.Context):
 
     # had to use format because python doesn't like \n inside template brackets
     if(len(acceptedCards) > 0):
-        print("\n\nACCEPTED CARDS: \n{0}".format("\n".join(acceptedCards)))
-        await vetoDiscussionChannel.send(content = "\n\nACCEPTED CARDS: \n{0}".format("\n".join(acceptedCards)))
+        vetoMessage = ("\n\nACCEPTED CARDS: \n{0}".format("\n".join(acceptedCards)))
+        await vetoDiscussionChannel.send(content = vetoMessage)
     if(len(errataedCards) > 0):
-        print("\n\nNEEDS ERRATA: \n{0}".format("\n".join(errataedCards)))
-        await vetoDiscussionChannel.send(content = "\n\nNEEDS ERRATA: \n{0}".format("\n".join(errataedCards)))
+        errataMessage = ("\n\nNEEDS ERRATA: \n{0}".format("\n".join(errataedCards)))
+        await vetoDiscussionChannel.send(content = errataMessage)
     if(len(vetoedCards) > 0):
-        print("\n\nVETOED: \n{0}".format("\n".join(vetoedCards)))
-        await vetoDiscussionChannel.send(content = "\n\nVETOED: \n{0}".format("\n".join(vetoedCards)))
+        vetoMessage = ("\n\nVETOED: \n{0}".format("\n".join(vetoedCards)))
+        await vetoDiscussionChannel.send(content = vetoMessage)
     if(len(vetoHellCards) > 0):
-        print("\n\nVETO HELL: \n{0}".format("\n".join(vetoHellCards)))
-        await vetoDiscussionChannel.send(content = "\n\nVETO HELL: \n{0}".format("\n".join(vetoHellCards)))
+        hellMessage = ("\n\nVETO HELL: \n{0}".format("\n".join(vetoHellCards)))
+        await vetoDiscussionChannel.send(content = hellMessage)
 
 
 bot.run(DISCORD_ACCESS_TOKEN)

@@ -5,11 +5,11 @@ from secrets.reddit_secrets import ID,SECRET,PASSWORD,USER_AGENT,NAME
 
 async def postToReddit(image_path:str, title:str, flair:str=""):
     reddit = asyncpraw.Reddit(
-        client_id=ID,
-        client_secret=SECRET,
-        password=PASSWORD,
-        user_agent=USER_AGENT,
-        username=NAME
+        client_id = ID,
+        client_secret = SECRET,
+        password = PASSWORD,
+        user_agent = USER_AGENT,
+        username = NAME
     )
     # print(await reddit.user.me())
     hellscubeSubreddit:asyncpraw.reddit.Subreddit = await reddit.subreddit('HellsCube')

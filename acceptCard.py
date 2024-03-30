@@ -14,21 +14,17 @@ cardSheetUnapproved = googleClient.open_by_key(hc_constants.HELLSCUBE_DATABASE).
 
 
 async def acceptCard(bot:commands.Bot, cardMessage:str, file:discord.File, cardName:str, authorName:str):
-    cardListChannel = cast(discord.TextChannel,bot.get_channel(hc_constants.FOUR_ONE_CARD_LIST_CHANNEL))
+    cardListChannel = cast(discord.TextChannel, bot.get_channel(hc_constants.FOUR_ONE_CARD_LIST_CHANNEL))
     await cardListChannel.send( file = file, content = cardMessage)
 
-
-    
-
-    # this code sucks but i don't remember what the discord file object looks like
-    extension = re.search("\.([^.]*)$", file.filename)
+    extension = re.search("\.([^.]*)$", file.filename)  # this code sucks but i don't remember what the discord file object looks like
 
     fileType = extension.group() if extension else ".png" # just guess that the file is a png
 
     image_path = f'tempImages/{cardName.replace("/", "|")}{fileType}'
 
-    with open(image_path, 'wb') as out: ## Open temporary file as bytes
-        out.write(file.fp.read())  ## Read bytes into file
+    with open(image_path, 'wb') as out:
+        out.write(file.fp.read())
 
     try:
         # There used to be a try/catch here, but it turned out that reddit was not the flakiest part here. it was llllll
@@ -46,8 +42,8 @@ async def acceptCard(bot:commands.Bot, cardMessage:str, file:discord.File, cardN
 
     imageUrl = getDriveUrl(google_drive_file_id)
 
-
     allCardNames = cardSheetUnapproved.col_values(1)
+
     newCard = True
     if cardName in allCardNames and cardName != "":
         dbRowIndex = allCardNames.index(cardName) + 1
@@ -56,7 +52,9 @@ async def acceptCard(bot:commands.Bot, cardMessage:str, file:discord.File, cardN
         dbRowIndex = len(allCardNames) + 1
         if cardName == "":
             cardName = "NO NAME"
+
     cardSheetUnapproved.update_cell(dbRowIndex, 2, imageUrl)
+    
     if newCard:
         cardSheetUnapproved.update_cell(dbRowIndex, 1, cardName)
         cardSheetUnapproved.update_cell(dbRowIndex, 3, authorName)

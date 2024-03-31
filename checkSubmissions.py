@@ -59,7 +59,7 @@ async def checkSubmissions(bot:commands.Bot):
                 await vetoEntry.add_reaction("🤔")
                 
                 thread = await vetoEntry.create_thread(name = vetoEntry.content[0:99])
-                role:Role = get(vetoEntry.author.guild.roles, id = hc_constants.VETO_COUNCIL_MAYBE)
+                role:Role = get(vetoEntry.author.guild.roles, id = hc_constants.VETO_COUNCIL)
                 await thread.send(role.mention)
 
 

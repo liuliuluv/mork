@@ -117,7 +117,7 @@ class HellscubeDatabaseCog(commands.Cog):
         delta = timeNow - subStart
         intDelta = (delta.days * 24 * 60 * 60) + delta.seconds
         randomSecond = randrange(intDelta)
-        randomDate = subStart + timedelta(seconds=randomSecond)
+        randomDate = subStart + timedelta(seconds = randomSecond)
         subChannel = self.bot.get_channel(hc_constants.SUBMISSIONS_CHANNEL)
         subHistory = subChannel.history(around = randomDate)
         subHistory = [message async for message in subHistory]

@@ -105,7 +105,7 @@ class LifecycleCog(commands.Cog):
             await message.add_reaction("🤮")
             await message.add_reaction("🤔")
             thread = await message.create_thread(name = message.content[0:99])
-            role = cast(Role, get(cast(Member, message.author).guild.roles, id = hc_constants.VETO_COUNCIL_MAYBE))
+            role = cast(Role, get(cast(Member, message.author).guild.roles, id = hc_constants.VETO_COUNCIL))
             await thread.send(role.mention)
         if message.channel.id == hc_constants.FOUR_ZERO_ERRATA_SUBMISSIONS_CHANNEL:
             if "@" in message.content:
@@ -168,7 +168,7 @@ class LifecycleCog(commands.Cog):
             return
         messages = [message async for message in messages]
         acceptedCards:list[str] = []
-        errataedCards:list[str] = []
+        needsErrataCards:list[str] = []
         vetoedCards:list[str] = []
         vetoHellCards:list[str] = []
         for messageEntry in messages:
@@ -180,31 +180,40 @@ class LifecycleCog(commands.Cog):
             down = get(messageEntry.reactions, emoji = hc_constants.VOTE_DOWN)
             downvote = down.count if down else -1
 
-            erratas = get(messageEntry.reactions, emoji = self.bot.get_emoji( hc_constants.CIRION_SPELLING))
+            erratas = get(messageEntry.reactions, emoji = self.bot.get_emoji(hc_constants.CIRION_SPELLING))
             errata = erratas.count if erratas else -1
         
             messageAge = timeNow - messageEntry.created_at
 
-
-            if (get(messageEntry.reactions, emoji = hc_constants.ACCEPT) or get(messageEntry.reactions, emoji = hc_constants.DELETE) or messageAge < timedelta(days=1)):
+            if (
+                get(messageEntry.reactions, emoji = hc_constants.ACCEPT)
+                or get(messageEntry.reactions, emoji = hc_constants.DELETE)
+                or messageAge < timedelta(days=1)
+            ):
                 continue # Skip cards that have been marked, or are only a day old
             # Errata needed case
-            elif (errata > 4
-                    and errata >= upvote
-                    and errata >= downvote):
-                errataedCards.append(getCardMessage(messageEntry.content))
+            
+            guild = cast(Guild, messageEntry.guild)
+            
+            if (
+                errata > 4
+                and errata >= upvote
+                and errata >= downvote
+            ):
+                needsErrataCards.append(getCardMessage(messageEntry.content))
 
                 await messageEntry.add_reaction(hc_constants.ACCEPT)
-                thread = cast(Guild, messageEntry.guild).get_channel_or_thread(messageEntry.id)
+                thread = guild.get_channel_or_thread(messageEntry.id)
                 if thread:
                     await cast(Thread, thread).edit(archived = True)
 
             # Accepted case
-            elif (upvote > 4
-                    and upvote >= downvote
-                    and upvote >= errata):
-                
-                thread = cast(Thread, cast(Guild, messageEntry.guild).get_channel_or_thread(messageEntry.id))
+            elif (
+                upvote > 4
+                and upvote >= downvote
+                and upvote >= errata
+            ):
+                thread = cast(Thread, guild.get_channel_or_thread(messageEntry.id))
                 if thread:
                     await thread.edit(archived = True)
 
@@ -238,18 +247,35 @@ class LifecycleCog(commands.Cog):
 
 
             # Veto case
-            elif (downvote > 4
+            elif (
+                downvote > 4
                 and downvote >= upvote
-                and downvote >= errata):
+                and downvote >= errata
+            ):
                 vetoedCards.append(getCardMessage(messageEntry.content))
-                await messageEntry.add_reaction(hc_constants.ACCEPT) # see ./README.md TODO: maybe use the delete emoji instead?
+                await messageEntry.add_reaction(hc_constants.ACCEPT) # see ./README.md 
 
             # Veto Hell
             elif (messageAge > timedelta(days = 7)):
-                thread = cast(Thread, cast(Guild, messageEntry.guild).get_channel_or_thread(messageEntry.id))
-                role = cast(Role, get(cast(Guild, messageEntry.guild).roles, id = hc_constants.VETO_COUNCIL_MAYBE))
-                await thread.send(role.mention)
-                vetoHellCards.append(getCardMessage(messageEntry.content))
+                thread = cast(Thread, guild.get_channel_or_thread(messageEntry.id))
+                recentlyNotified = False
+                # new code
+                threadMessages = thread.history()
+                threadMessages = [message async for message in threadMessages]
+
+                for threadMessage in threadMessages:
+                    if threadMessage.content == f"<@&{798689768379908106}>":
+                       threadMessageAge = timeNow - threadMessage.created_at
+                       if threadMessageAge < timedelta(days = 7):
+                        # then it was recently acted upon
+                        recentlyNotified = True
+                        break
+
+                if not recentlyNotified:
+                    role = cast(Role, get(guild.roles, id = hc_constants.VETO_COUNCIL))
+                    await thread.send(role.mention)
+                    vetoHellCards.append(getCardMessage(messageEntry.content))
+
 
         await vetoDiscussionChannel.send(content= f"!! VETO POLLS HAVE BEEN PROCESSED !!")
 
@@ -257,8 +283,8 @@ class LifecycleCog(commands.Cog):
         if(len(acceptedCards) > 0):
             vetoMessage = ("\n\nACCEPTED CARDS: \n{0}".format("\n".join(acceptedCards)))
             await vetoDiscussionChannel.send(content = vetoMessage)
-        if(len(errataedCards) > 0):
-            errataMessage = ("\n\nNEEDS ERRATA: \n{0}".format("\n".join(errataedCards)))
+        if(len(needsErrataCards) > 0):
+            errataMessage = ("\n\nNEEDS ERRATA: \n{0}".format("\n".join(needsErrataCards)))
             await vetoDiscussionChannel.send(content = errataMessage)
         if(len(vetoedCards) > 0):
             vetoMessage = ("\n\nVETOED: \n{0}".format("\n".join(vetoedCards)))

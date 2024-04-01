@@ -84,9 +84,9 @@ class MiscCog(commands.Cog):
 
     # @commands.Cog.listener()
     # async def on_ready(self):
-    #     print(f'{self.bot.user.name} has connected to Discord!')
+    #     # print(f'{self.bot.user.name} has connected to Discord!')
     #     cardlist = self.bot.get_channel(hc_constants.FOUR_ONE_CARD_LIST_CHANNEL)
-    #     messages = cardlist.history( limit=12 )
+    #     messages = cardlist.history( limit=10 )
     #     messages = [message async for message in messages]
     #     for message in messages:
     #         #print(message.content)
@@ -103,6 +103,13 @@ class MiscCog(commands.Cog):
 
     #         file = await message.attachments[0].to_file()
     #         print( cardMessage, file, card, creator)
+    #         await acceptCard(
+    #             bot=self.bot,
+    #             cardMessage=cardMessage,
+    #             file=file,
+    #             cardName=card,
+    #             authorName=creator
+    #         )
          
 
 

@@ -16,7 +16,6 @@ from discord.utils import get
 
 from datetime import datetime, timezone, timedelta
 
-
 from checkErrataSubmissions import checkErrataSubmissions
 from checkSubmissions import checkSubmissions
 
@@ -48,14 +47,6 @@ class LifecycleCog(commands.Cog):
             # with open("log.txt", 'a', encoding='utf8') as file:
             #     file.write(log)
             #     log = ""
-        
-    # @commands.Cog.listener()
-    # async def on_raw_reaction_remove(self, payload:RawReactionActionEvent):
-    #     # global log
-    #     if payload.channel_id == hc_constants.SUBMISSIONS_CHANNEL:
-    #         serv = self.bot.get_guild(hc_constants.SERVER_ID)
-           # user = serv.get_member(payload.user_id)
-            # log += f"{payload.message_id}: Removed {payload.emoji.name} from {payload.user_id} ({user.name}|{user.nick}) at {datetime.now()}\n"
 
     @commands.Cog.listener()
     async def on_member_join(self,member:Member):
@@ -147,7 +138,7 @@ class LifecycleCog(commands.Cog):
 
 
 
-    @commands.Cog.listener()
+    @commands.command()
     async def compileveto(self, ctx: commands.Context):
         if ctx.channel.id != hc_constants.VETO_DISCUSSION_CHANNEL:
             await ctx.send("Veto Council Only")
@@ -156,7 +147,7 @@ class LifecycleCog(commands.Cog):
         vetoChannel = cast(TextChannel, self.bot.get_channel(hc_constants.VETO_CHANNEL))
         vetoDiscussionChannel = cast(TextChannel, self.bot.get_channel(hc_constants.VETO_DISCUSSION_CHANNEL))
         timeNow = datetime.now(timezone.utc)        
-        fourWeeksAgo = timeNow + timedelta(days=-28)
+        fourWeeksAgo = timeNow + timedelta(days=-28*6)
         epicCatchphrases = ["If processing lasts more than 5 minutes, consult your doctor.", "on it, yo.", "ya ya gimme a sec", "processing...", "You're not the boss of me", "ok, 'DAD'", "but what of the children?", "?", "workin' on it!", "on it!", "can do, cap'n!", "raseworter pro tip: run it back, but with less 'tude next time.", "who? oh yeah sure thing b0ss", "how about no for a change?", "CAAAAAAAAAAAAAAN DO!", "i'm afraid i can't let you do that.", "i mean like, if you say so, man", "WOOOOOOOOOOOOOOOOOOOOOOOOOOOO", "*nuzzles u*"]
         
         await ctx.send(random.choice(epicCatchphrases))
@@ -171,9 +162,21 @@ class LifecycleCog(commands.Cog):
         needsErrataCards:list[str] = []
         vetoedCards:list[str] = []
         vetoHellCards:list[str] = []
+        mysteryVetoHellCards:list[str] = []
         for messageEntry in messages:
             if (len(messageEntry.attachments) == 0):
                 continue
+
+            messageAge = timeNow - messageEntry.created_at
+
+            if (
+                get(messageEntry.reactions, emoji = hc_constants.ACCEPT)
+                or get(messageEntry.reactions, emoji = hc_constants.DELETE)
+                or messageAge < timedelta(days = 1)
+            ):
+                continue # Skip cards that have been marked, or are only a day old
+
+
             up = get(messageEntry.reactions, emoji = hc_constants.VOTE_UP)
             upvote = up.count if up else -1
 
@@ -182,28 +185,19 @@ class LifecycleCog(commands.Cog):
 
             erratas = get(messageEntry.reactions, emoji = self.bot.get_emoji(hc_constants.CIRION_SPELLING))
             errata = erratas.count if erratas else -1
-        
-            messageAge = timeNow - messageEntry.created_at
-
-            if (
-                get(messageEntry.reactions, emoji = hc_constants.ACCEPT)
-                or get(messageEntry.reactions, emoji = hc_constants.DELETE)
-                or messageAge < timedelta(days=1)
-            ):
-                continue # Skip cards that have been marked, or are only a day old
-            # Errata needed case
             
             guild = cast(Guild, messageEntry.guild)
-            
+            # Errata needed case
             if (
                 errata > 4
                 and errata >= upvote
                 and errata >= downvote
             ):
+                thread = guild.get_channel_or_thread(messageEntry.id)
+
                 needsErrataCards.append(getCardMessage(messageEntry.content))
 
                 await messageEntry.add_reaction(hc_constants.ACCEPT)
-                thread = guild.get_channel_or_thread(messageEntry.id)
                 if thread:
                     await cast(Thread, thread).edit(archived = True)
 
@@ -213,10 +207,6 @@ class LifecycleCog(commands.Cog):
                 and upvote >= downvote
                 and upvote >= errata
             ):
-                thread = cast(Thread, guild.get_channel_or_thread(messageEntry.id))
-                if thread:
-                    await thread.edit(archived = True)
-
                 file = await messageEntry.attachments[0].to_file()
                 
                 acceptanceMessage = messageEntry.content
@@ -235,7 +225,9 @@ class LifecycleCog(commands.Cog):
                 resolvedName = dbname if dbname !="" else "Crazy card with no name"
                 resolvedAuthor = card_author if card_author != "" else "no author"
                 cardMessage = f"**{resolvedName}** by **{resolvedAuthor}**"
+
                 acceptedCards.append(cardMessage)
+
                 await acceptCard(
                     bot = self.bot,
                     file = file,
@@ -243,8 +235,11 @@ class LifecycleCog(commands.Cog):
                     cardName = dbname,
                     authorName = card_author
                 )
-                await messageEntry.add_reaction(hc_constants.ACCEPT)
 
+                await messageEntry.add_reaction(hc_constants.ACCEPT)
+                thread = cast(Thread, guild.get_channel_or_thread(messageEntry.id))
+                if thread:
+                    await thread.edit(archived = True)
 
             # Veto case
             elif (
@@ -252,30 +247,37 @@ class LifecycleCog(commands.Cog):
                 and downvote >= upvote
                 and downvote >= errata
             ):
+                
                 vetoedCards.append(getCardMessage(messageEntry.content))
+
                 await messageEntry.add_reaction(hc_constants.ACCEPT) # see ./README.md 
 
             # Veto Hell
             elif (messageAge > timedelta(days = 7)):
+
                 thread = cast(Thread, guild.get_channel_or_thread(messageEntry.id))
                 recentlyNotified = False
-                # new code
-                threadMessages = thread.history()
-                threadMessages = [message async for message in threadMessages]
 
-                for threadMessage in threadMessages:
-                    if threadMessage.content == f"<@&{798689768379908106}>":
-                       threadMessageAge = timeNow - threadMessage.created_at
-                       if threadMessageAge < timedelta(days = 7):
-                        # then it was recently acted upon
-                        recentlyNotified = True
-                        break
+                if thread:
+                    threadMessages = thread.history()
+                    threadMessages = [tm async for tm in threadMessages]
+    
+                    for threadMessage in threadMessages:
+                        if threadMessage.content == f"<@&{798689768379908106}>":
+                            threadMessageAge = timeNow - threadMessage.created_at
+                            if threadMessageAge < timedelta(days = 7):
+                                # then it was recently acted upon
+                                recentlyNotified = True
+                                break
 
-                if not recentlyNotified:
-                    role = cast(Role, get(guild.roles, id = hc_constants.VETO_COUNCIL))
-                    await thread.send(role.mention)
-                    vetoHellCards.append(getCardMessage(messageEntry.content))
+                    if not recentlyNotified:
+                        role = cast(Role, get(guild.roles, id = hc_constants.VETO_COUNCIL))
 
+                        vetoHellCards.append(getCardMessage(messageEntry.content))
+
+                        await thread.send(role.mention)
+                else:
+                    mysteryVetoHellCards.append(getCardMessage(messageEntry.content))
 
         await vetoDiscussionChannel.send(content= f"!! VETO POLLS HAVE BEEN PROCESSED !!")
 
@@ -292,6 +294,9 @@ class LifecycleCog(commands.Cog):
         if(len(vetoHellCards) > 0):
             hellMessage = ("\n\nVETO HELL: \n{0}".format("\n".join(vetoHellCards)))
             await vetoDiscussionChannel.send(content = hellMessage)
+        if(len(mysteryVetoHellCards) > 0):
+            mysteryHellMessage = ("\n\nMYSTERY VETO HELL (Veto hell but the bot can't see the thread for some reason): \n{0}".format("\n".join(mysteryVetoHellCards)))
+            await vetoDiscussionChannel.send(content = mysteryHellMessage)
 
 
 

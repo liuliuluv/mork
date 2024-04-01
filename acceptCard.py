@@ -25,11 +25,12 @@ async def acceptCard(bot:commands.Bot, cardMessage:str, file:discord.File, cardN
 
     with open(image_path, 'wb') as out:
         out.write(file.fp.read())
+        out.close()
 
     try:
         # There used to be a try/catch here, but it turned out that reddit was not the flakiest part here. it was llllll
         await postToReddit(
-            image_path,
+            image_path = image_path,
             title = f"{cardMessage} was accepted!",
             flair = hc_constants.ACCEPTED_FLAIR
         )
